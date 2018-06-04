@@ -1,0 +1,20 @@
+{
+  "name": "discord-bot-of-hell",
+  "version": "1.0.0",
+  "description": "powerful bot (of hell)",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Burnett",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.3.2"
+  },
+  "devDependencies": {
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-standard": "^3.1.0"
+  }
+}
