@@ -1,6 +1,7 @@
 const settings = require('./settings.json');
-const discord = require('discord.js');
-const client = new discord.Client();
+const Discord = require('discord.js');
+const client = new Discord.Client();
+const prefix = settings.prefix;
 
 client.on('ready', async () => {
     console.log(client.user.username + ' ready for deployment sir.\n');
@@ -18,14 +19,36 @@ client.on('message', async message => {
     if (message.channel.type === 'dm') return;
     if (!message.content.startsWith(settings.prefix)) return;
 
+    executeCommand(message);
+});
+
+client.login(settings.token);
+
+function executeCommand(message) {
     let args = message.content.split(' ');
     let command = args[0];
     args.splice(1);
 
-    console.log(args);
-    console.log(command);
+    switch (command) {
+        case `${prefix}hello`:
+            message.react('👋');
+            break;
+        case `${prefix}userinfo`:
+            let user = message.author;
+            let embed = CreateUserInfoEmbed(user);
 
-    if (command === `${settings.prefix}sir`) message.react('👋');
-});
+            message.channel.send(embed);
+            break;
+        default:
+            console.log(`${command} is not a recognized command!`);
+    }
+}
 
-client.login(settings.token);
+function CreateUserInfoEmbed(user) {
+    return new Discord.RichEmbed()
+        .setAuthor(user.username)
+        .setImage(user.avatarURL)
+        .setColor('BLUE')
+        .addField('Full username: ', `${user.username}#${user.discriminator}`)
+        .addField('Joined Discord: ', user.createdAt);
+}
