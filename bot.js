@@ -5,13 +5,8 @@ const prefix = settings.prefix;
 
 client.on('ready', async () => {
     console.log(client.user.username + ' ready for deployment sir.\n');
-
-    try {
-        let link = await client.generateInvite(['ADMINISTRATOR']);
-        console.log(`To add me to a server, go here sir:\n ${link}`);
-    } catch (err) {
-        console.log(err.stack);
-    }
+    let link = await client.generateInvite(['ADMINISTRATOR']).catch(console.error);
+    console.log(`To add me to a server, go here sir:\n ${link}`);
 });
 
 client.on('message', async message => {
@@ -39,23 +34,40 @@ async function executeCommand(message) {
             message.channel.send(embed);
             break;
         case `${prefix}colour`:
-            message.member.colorRole.setColor(getColour(args))
+            if (!message.member.colorRole) {
+                //No colorRole, create a new role
+                let role = await getNewRole(message);
+                await message.member.addRole(role).catch(console.error);
+            }
+            await message.member.colorRole.setColor(getColour(args))
                 .then(updated => message.reply(`colour set to ${updated.hexColor}`))
                 .catch(console.error);
+            break;
+        case `${prefix}cleanup`:
+            cleanUp(message).catch(console.error);
             break;
         default:
             message.reply(`${command} is not a recognized command!`);
     }
+    //TODO: add a cleanup function that gets rid of all bots messages, and optionally any message starting with prefix
+    //TODO: add a function to trim all unused roles since the colour command will make some useless ones
 }
 
 //Discord-related helper functions
-function createUserInfoEmbed(user) {
+function createUserInfoEmbed(member) {
+    let roles = "";
+    member.roles.forEach(entry => {
+        roles += entry;
+        roles += ', ';
+    });
+    roles = roles.slice(0, -2); //Remove trailing comma and space
     return new Discord.RichEmbed()
-        .setTitle(`User info - ${user.user.username}`)
-        .setImage(user.user.avatarURL)
-        .setColor(user.colorRole.color || 'BLUE')
-        .addField('Full username:', `${user.user.username}#${user.user.discriminator}`)
-        .addField('Joined Discord:', user.user.createdAt);
+        .setTitle(`User info - ${member.user.username}`)
+        .setImage(member.user.avatarURL)
+        .setColor(member.colorRole ? member.colorRole.color : 'GREY')
+        .addField('Full username:', `${member.user.username}#${member.user.discriminator}`)
+        .addField('Current Roles:', `${roles ? roles : "None"}`)
+        .addField('Joined Discord:', member.user.createdAt);
 }
 
 function getColour(args) {
@@ -73,6 +85,22 @@ function getColour(args) {
         colour[2] = getRandomInt(1,256);
     }
     return colour;
+}
+
+async function getNewRole(message) {
+    return await message.guild.createRole({
+        name: `^-^`,
+        color: 'GREY',
+        permission: [],
+    }).catch(console.error);
+}
+
+async function cleanUp(message) {
+    message.guild.roles.forEach(entry => {
+        console.log(entry);
+        console.log(entry.name);
+        //if (entry.name === '^-^' && entry.members.count === 0) entry.delete.catch(console.error);
+    });
 }
 
 //Helper functions
