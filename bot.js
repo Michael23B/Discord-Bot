@@ -2,11 +2,12 @@ const settings = require('./settings.json');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const prefix = settings.prefix;
+const botRole = '^-^';
 
 client.on('ready', async () => {
     console.log(client.user.username + ' ready for deployment sir.\n');
-    let link = await client.generateInvite(['ADMINISTRATOR']).catch(console.error);
-    console.log(`To add me to a server, go here sir:\n ${link}`);
+    //let link = await client.generateInvite(['ADMINISTRATOR']).catch(console.error);
+    //console.log(`To add me to a server, go here sir:\n ${link}`);
 });
 
 client.on('message', async message => {
@@ -44,7 +45,9 @@ async function executeCommand(message) {
                 .catch(console.error);
             break;
         case `${prefix}cleanup`:
-            cleanUp(message).catch(console.error);
+            cleanUp(message, args)
+                .then(message.reply('all done'))
+                .catch(console.error);
             break;
         default:
             message.reply(`${command} is not a recognized command!`);
@@ -78,7 +81,7 @@ function getColour(args) {
         colour[1] = clamp(args[1], 1, 255);
         colour[2] = clamp(args[2], 1, 255);
     }
-    //Otherwise generate a random number
+    //Otherwise generate a random colour
     else {
         colour[0] = getRandomInt(1,256);
         colour[1] = getRandomInt(1,256);
@@ -89,18 +92,25 @@ function getColour(args) {
 
 async function getNewRole(message) {
     return await message.guild.createRole({
-        name: `^-^`,
+        name: botRole,
         color: 'GREY',
         permission: [],
     }).catch(console.error);
 }
 
-async function cleanUp(message) {
-    message.guild.roles.forEach(entry => {
-        console.log(entry);
-        console.log(entry.name);
-        //if (entry.name === '^-^' && entry.members.count === 0) entry.delete.catch(console.error);
-    });
+async function cleanUp(message, args) {
+    //FIXME: since we split by space, can't delete roles with space in their name
+    let roleToDelete = args[1] || botRole;
+    //>cleanup roles [role name]
+    if (!args[0] || args[0] === 'roles') {
+        message.guild.roles.forEach(entry => {
+            if (entry.name === roleToDelete) entry.delete().catch(console.error);
+        });
+        message.reply(`cleaning up roles named ${roleToDelete}`);
+    }
+    else if (args[0] === 'messages') {
+        message.reply(`(not implemented yet) cleaning up message from me, the bot`);
+    }
 }
 
 //Helper functions
