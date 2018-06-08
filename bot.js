@@ -31,8 +31,12 @@ async function executeCommand(message) {
             break;
         case `${prefix}userinfo`:
             let user =  message.mentions.members.first() || message.guild.members.find(x => x.user === message.author);
-            let embed = createUserInfoEmbed(user);
-            message.channel.send(embed);
+            let userEmbed = createUserInfoEmbed(user);
+            message.channel.send(userEmbed);
+            break;
+        case `${prefix}serverinfo`:
+            let serverEmbed = createServerInfoEmbed(message);
+            message.channel.send(serverEmbed);
             break;
         case `${prefix}colour`:
             if (!message.member.colorRole) {
@@ -69,8 +73,28 @@ function createUserInfoEmbed(member) {
         .setImage(member.user.avatarURL)
         .setColor(member.colorRole ? member.colorRole.color : 'GREY')
         .addField('Full username:', `${member.user.username}#${member.user.discriminator}`)
-        .addField('Current Roles:', `${roles ? roles : "None"}`)
+        .addField('Current roles:', `${roles || "None"}`)
         .addField('Joined Discord:', member.user.createdAt);
+}
+
+function createServerInfoEmbed(message) {
+    let roles = getRolesString(message.guild.roles);
+    return new Discord.RichEmbed()
+        .setTitle(`Server info - ${message.guild.name}`)
+        .setImage(message.guild.iconURL)
+        .setColor('BLUE')
+        .addField('Current roles:', `${roles || "None"}`)
+        .addField('Server created:', message.guild.createdAt)
+        .addField('Current channel topic:', `${message.channel.topic || 'None'}`);
+}
+
+function getRolesString(rolesCollection) {
+    let roles = "";
+    rolesCollection.forEach(entry => {
+        roles += entry;
+        roles += ', ';
+    });
+    return roles = roles.slice(0, -2); //Remove trailing comma and space
 }
 
 function getColour(args) {
@@ -100,9 +124,9 @@ async function getNewRole(message) {
 
 async function cleanUp(message, args) {
     //FIXME: since we split by space, can't delete roles with space in their name
-    let roleToDelete = args[1] || botRole;
     //>cleanup roles [role name]
     if (!args[0] || args[0] === 'roles') {
+        let roleToDelete = args[1] || botRole;
         message.guild.roles.forEach(entry => {
             if (entry.name === roleToDelete) entry.delete().catch(console.error);
         });
