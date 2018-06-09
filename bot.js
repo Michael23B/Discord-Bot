@@ -31,11 +31,11 @@ async function executeCommand(message) {
             break;
         case `${prefix}userinfo`:
             let user =  message.mentions.members.first() || message.guild.members.find(x => x.user === message.author);
-            let userEmbed = createUserInfoEmbed(user);
+            let userEmbed = await createUserInfoEmbed(user);
             message.channel.send(userEmbed);
             break;
         case `${prefix}serverinfo`:
-            let serverEmbed = createServerInfoEmbed(message);
+            let serverEmbed = await createServerInfoEmbed(message);
             message.channel.send(serverEmbed);
             break;
         case `${prefix}colour`:
@@ -57,17 +57,11 @@ async function executeCommand(message) {
             message.reply(`${command} is not a recognized command!`);
     }
     //TODO: add a cleanup function that gets rid of all bots messages, and optionally any message starting with prefix
-    //TODO: add a function to trim all unused roles since the colour command will make some useless ones
 }
 
 //Discord-related helper functions
-function createUserInfoEmbed(member) {
-    let roles = "";
-    member.roles.forEach(entry => {
-        roles += entry;
-        roles += ', ';
-    });
-    roles = roles.slice(0, -2); //Remove trailing comma and space
+async function createUserInfoEmbed(member) {
+    let roles = await getRolesString(member.roles);
     return new Discord.RichEmbed()
         .setTitle(`User info - ${member.user.username}`)
         .setImage(member.user.avatarURL)
@@ -77,8 +71,8 @@ function createUserInfoEmbed(member) {
         .addField('Joined Discord:', member.user.createdAt);
 }
 
-function createServerInfoEmbed(message) {
-    let roles = getRolesString(message.guild.roles);
+async function createServerInfoEmbed(message) {
+    let roles = await getRolesString(message.guild.roles);
     return new Discord.RichEmbed()
         .setTitle(`Server info - ${message.guild.name}`)
         .setImage(message.guild.iconURL)
@@ -88,9 +82,9 @@ function createServerInfoEmbed(message) {
         .addField('Current channel topic:', `${message.channel.topic || 'None'}`);
 }
 
-function getRolesString(rolesCollection) {
+async function getRolesString(rolesCollection) {
     let roles = "";
-    rolesCollection.forEach(entry => {
+    await rolesCollection.forEach(entry => {
         roles += entry;
         roles += ', ';
     });
@@ -125,8 +119,9 @@ async function getNewRole(message) {
 async function cleanUp(message, args) {
     //FIXME: since we split by space, can't delete roles with space in their name
     //>cleanup roles [role name]
-    if (!args[0] || args[0] === 'roles') {
-        let roleToDelete = args[1] || botRole;
+    if (args[0] === 'roles') {
+        let roleToDelete = Array.prototype.join.call(args.slice(1), " ") || botRole;
+
         message.guild.roles.forEach(entry => {
             if (entry.name === roleToDelete) entry.delete().catch(console.error);
         });
@@ -134,6 +129,9 @@ async function cleanUp(message, args) {
     }
     else if (args[0] === 'messages') {
         message.reply(`(not implemented yet) cleaning up message from me, the bot`);
+    }
+    else if (!args[0]) {
+        message.reply(`What?`);
     }
 }
 
