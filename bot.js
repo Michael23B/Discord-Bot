@@ -49,9 +49,7 @@ async function executeCommand(message) {
                 .catch(console.error);
             break;
         case `${prefix}cleanup`:
-            cleanUp(message, args)
-                .then(message.reply('all done'))
-                .catch(console.error);
+            cleanUp(message, args).catch(console.error);
             break;
         default:
             message.reply(`${command} is not a recognized command!`);
@@ -118,21 +116,25 @@ async function getNewRole(message) {
 
 async function cleanUp(message, args) {
     //FIXME: since we split by space, can't delete roles with space in their name
-    //>cleanup roles [role name]
     if (args[0] === 'roles') {
         let roleToDelete = Array.prototype.join.call(args.slice(1), " ") || botRole;
 
         message.guild.roles.forEach(entry => {
-            if (entry.name === roleToDelete) entry.delete().catch(console.error);
+            if (entry.name === roleToDelete) entry.delete().catch(() => {
+                message.reply(`couldn't remove the ${entry.name} role for some reason >:(`);
+            });
         });
         message.reply(`cleaning up roles named ${roleToDelete}`);
     }
     else if (args[0] === 'messages') {
         message.reply(`(not implemented yet) cleaning up message from me, the bot`);
     }
-    else if (!args[0]) {
-        message.reply(`What?`);
+    else {
+        message.reply('I don\'t know how to clean that up');
+        return;
     }
+
+    message.reply('all done');
 }
 
 //Helper functions
