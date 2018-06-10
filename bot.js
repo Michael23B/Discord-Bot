@@ -103,18 +103,19 @@ async function createVoiceChannel(message, args) {
         return;
     }
 
-    let channel = await message.guild.createChannel(args[0], 'voice', [{
-        id: message.guild.id,
-        deny: ['CONNECT']},
-        {
-        id: message.author.id,
-        allow: ['CONNECT']
-        }]).catch(console.error);
+    //Disable all permissions for users, enable them for author
+    //Stored in a bitfield so we negate 0 for all 1s
+    let channel = await message.guild.createChannel(args[0], 'voice', [
+        { id: message.guild.id, deny: ~0},
+        { id: message.author.id, allow: ~0 }
+        ]).catch(console.error);
 
-
+    //and mentions
     message.mentions.members.forEach(async mention => {
             await channel.overwritePermissions(mention, {
-                CONNECT: true
+                CONNECT: true,
+                VIEW_CHANNEL: true,
+                SPEAK: true
             }).catch(console.error);
         }
     );
