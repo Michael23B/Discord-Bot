@@ -19,7 +19,7 @@ client.on('message', async message => {
 });
 
 client.login(settings.token).catch(console.error);
-
+//TODO: move command definitions to another file
 async function executeCommand(message) {
     let args = message.content.split(' ');
     let command = args[0];
@@ -47,6 +47,9 @@ async function executeCommand(message) {
             await message.member.colorRole.setColor(getColour(args))
                 .then(updated => message.reply(`colour set to ${updated.hexColor}`))
                 .catch(console.error);
+            break;
+        case `${prefix}create`:
+            await createVoiceChannel(message, args);
             break;
         case `${prefix}cleanup`:
             cleanUp(message, args).catch(console.error);
@@ -87,6 +90,34 @@ async function getRolesString(rolesCollection) {
         roles += ', ';
     });
     return roles = roles.slice(0, -2); //Remove trailing comma and space
+}
+
+async function createVoiceChannel(message, args) {
+    if (!args[0]) {
+        message.reply('please provide a name for the channel!');
+        return;
+    }
+    //TODO: check this earlier before any guild-related commands are chosen
+    if (!message.guild.available) {
+        message.reply('I can\'t do that');
+        return;
+    }
+
+    let channel = await message.guild.createChannel(args[0], 'voice', [{
+        id: message.guild.id,
+        deny: ['CONNECT']},
+        {
+        id: message.author.id,
+        allow: ['CONNECT']
+        }]).catch(console.error);
+
+
+    message.mentions.members.forEach(async mention => {
+            await channel.overwritePermissions(mention, {
+                CONNECT: true
+            }).catch(console.error);
+        }
+    );
 }
 
 function getColour(args) {
@@ -147,3 +178,5 @@ function getRandomInt(min, max) {
 function clamp(n, min, max) {
     return Math.min(Math.max(n, min), max);
 }
+
+//TODO: add reasons to commands to log who called the command
