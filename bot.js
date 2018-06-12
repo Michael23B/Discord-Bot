@@ -147,7 +147,6 @@ async function getNewRole(message) {
 }
 
 async function cleanUp(message, args) {
-    //FIXME: since we split by space, can't delete roles with space in their name
     if (args[0] === 'roles') {
         let roleToDelete = Array.prototype.join.call(args.slice(1), " ") || botRole;
 
@@ -159,6 +158,15 @@ async function cleanUp(message, args) {
         message.reply(`cleaning up roles named ${roleToDelete}`);
     }
     else if (args[0] === 'messages') {
+        let messages = await message.channel.fetchMessages({limit: args[1] || 10}).catch(console.error);
+        let user = message.mentions ? message.mentions.members.first() : null;
+
+        if (user) messages = messages.filter(x => x.author.id === user.id);
+
+        await message.channel.bulkDelete(messages);
+        message.reply(`I searched through the last ${args[1] || 10} messages and deleted ${messages.size} messages by ${user || 'everyone'}`);
+    }
+    else if (args[0] === 'calls') {
         message.reply(`(not implemented yet) cleaning up message from me, the bot`);
     }
     else {
