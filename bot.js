@@ -164,10 +164,20 @@ async function cleanUp(message, args) {
         if (user) messages = messages.filter(x => x.author.id === user.id);
 
         await message.channel.bulkDelete(messages);
-        message.reply(`I searched through the last ${args[1] || 10} messages and deleted ${messages.size} messages by ${user || 'everyone'}`);
+        message.reply(`I searched through the last ${args[1] || 10};
+        messages and deleted ${messages.size} messages by ${user || 'everyone'}`);
     }
     else if (args[0] === 'calls') {
-        message.reply(`(not implemented yet) cleaning up message from me, the bot`);
+        if (!args[1]) {
+            message.reply('please enter a channel name. ">cleanup calls [call name]"');
+            return;
+        }
+        let channelName = Array.prototype.join.call(args.slice(1), " ");
+        let channels = message.guild.channels.filter(x => x.name === channelName);
+        channels.forEach(entry => {
+            entry.delete();
+        });
+        message.reply(`removed ${channels ? channels.size : 0} channels named ${channelName}`);
     }
     else {
         message.reply('I don\'t know how to clean that up');
