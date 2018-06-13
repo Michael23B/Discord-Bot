@@ -26,6 +26,10 @@ async function executeCommand(message) {
     args = args.splice(1);
 
     switch (command) {
+        case `${prefix}help`:
+            let helpEmbed = await createHelpEmbed(message).catch(console.error);
+            message.channel.send(helpEmbed);
+            break;
         case `${prefix}hello`:
             message.react('👋');
             break;
@@ -57,7 +61,6 @@ async function executeCommand(message) {
         default:
             message.reply(`${command} is not a recognized command!`);
     }
-    //TODO: add a cleanup function that gets rid of all bots messages, and optionally any message starting with prefix
 }
 
 //Discord-related helper functions
@@ -66,7 +69,7 @@ async function createUserInfoEmbed(member) {
     return new Discord.RichEmbed()
         .setTitle(`User info - ${member.user.username}`)
         .setImage(member.user.avatarURL)
-        .setColor(member.colorRole ? member.colorRole.color : 'GREY')
+        .setColor(member.colorRole ? member.colorRole.color : 'BLUE')
         .addField('Full username:', `${member.user.username}#${member.user.discriminator}`)
         .addField('Current roles:', `${roles || "None"}`)
         .addField('Joined Discord:', member.user.createdAt);
@@ -81,6 +84,22 @@ async function createServerInfoEmbed(message) {
         .addField('Current roles:', `${roles || "None"}`)
         .addField('Server created:', message.guild.createdAt)
         .addField('Current channel topic:', `${message.channel.topic || 'None'}`);
+}
+
+async function createHelpEmbed(message) {
+    let colorRole = message.guild.members.find(x => x.user.username === client.user.username).colorRole;
+    return new Discord.RichEmbed()
+        .setTitle(`Commands for ${client.user.username}`)
+        .setThumbnail(`${client.user.avatarURL}`)
+        .setColor(colorRole ? colorRole.color : 'BLUE')
+        .addField('Cleanup:', '```>cleanup messages [amount to search] [@username]\n' +
+            '>cleanup roles [role name]\n' +
+            '>cleanup calls [call name]```')
+        .addField('Information:', '```>help\n' +
+            '>userinfo [@username]\n' +
+            '>serverinfo```')
+        .addField('Colour:', '```>colour [0-255] [0-255] [0-255]```')
+        .addField('Create:', '```>create [call name] [@users to allow]```');
 }
 
 async function getRolesString(rolesCollection) {
@@ -109,7 +128,6 @@ async function createVoiceChannel(message, args) {
         { id: message.guild.id, deny: ~0},
         { id: message.author.id, allow: ~0 }
         ]).catch(console.error);
-
     //and mentions
     message.mentions.members.forEach(async mention => {
             await channel.overwritePermissions(mention, {
@@ -164,12 +182,12 @@ async function cleanUp(message, args) {
         if (user) messages = messages.filter(x => x.author.id === user.id);
 
         await message.channel.bulkDelete(messages);
-        message.reply(`I searched through the last ${args[1] || 10};
-        messages and deleted ${messages.size} messages by ${user || 'everyone'}`);
+        message.reply(`I searched through the last ${args[1] || 10}` +
+            ` messages and deleted ${messages.size} messages by ${user || 'everyone'}`);
     }
     else if (args[0] === 'calls') {
         if (!args[1]) {
-            message.reply('please enter a channel name. ">cleanup calls [call name]"');
+            message.reply('please enter a channel name.');
             return;
         }
         let channelName = Array.prototype.join.call(args.slice(1), " ");
