@@ -27,8 +27,16 @@ async function executeCommand(message) {
 
     switch (command) {
         case `${prefix}help`:
-            let helpEmbed = await createHelpEmbed(message).catch(console.error);
-            message.channel.send(helpEmbed);
+            if (args[0] === 'detailed' || args[0] === 'true') {
+                let helpEmbed = await createDetailedHelpEmbed(message).catch(console.error);
+                message.author.createDM().then(dm => dm.send(helpEmbed))
+                    .catch(console.error)
+                    .then(message.reply('I\'ve sent you some information'));
+            }
+            else {
+                let helpEmbed = await createHelpEmbed(message).catch(console.error);
+                message.channel.send(helpEmbed);
+            }
             break;
         case `${prefix}hello`:
             message.react('👋');
@@ -95,11 +103,28 @@ async function createHelpEmbed(message) {
         .addField('Cleanup:', '```>cleanup messages [amount to search] [@username]\n' +
             '>cleanup roles [role name]\n' +
             '>cleanup calls [call name]```')
-        .addField('Information:', '```>help\n' +
+        .addField('Information:', '```>help [detailed?]\n' +
             '>userinfo [@username]\n' +
             '>serverinfo```')
         .addField('Colour:', '```>colour [0-255] [0-255] [0-255]```')
-        .addField('Create:', '```>create [call name] [@users to allow]```');
+        .addField('Create:', '```>create [call name] [@users to allow]```')
+        .setFooter('[arguments] are mostly optional.');
+}
+
+async function createDetailedHelpEmbed(message) {
+    let colorRole = message.guild.members.find(x => x.user.username === client.user.username).colorRole;
+    return new Discord.RichEmbed()
+        .setTitle(`Commands for ${client.user.username} (Detailed)`)
+        .setThumbnail(`${client.user.avatarURL}`)
+        .setColor(colorRole ? colorRole.color : 'BLUE')
+        .addField('Cleanup:', '```>cleanup messages [amount to search] [@username]```' +
+            'Defaults to fetching the last 10 messages in that channel and removes them all.\n' +
+            'Adding a user mention will delete messages from only that user, however,' +
+            ' the amount to search still includes all messages.\n' +
+            '```>cleanup roles [role name]```' +
+            `Defaults to removing all roles named ${botRole} (bot-created role name).` +
+            ' Otherwise removes all roles with the specified name.')
+        .setFooter('Not complete yet. This will have more info later.');
 }
 
 async function getRolesString(rolesCollection) {
