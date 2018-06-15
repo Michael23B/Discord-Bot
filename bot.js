@@ -108,7 +108,7 @@ async function createHelpEmbed(message) {
             '>serverinfo```')
         .addField('Colour:', '```>colour [0-255] [0-255] [0-255]```')
         .addField('Create:', '```>create [call name] [@users to allow]```')
-        .setFooter('[arguments] are mostly optional.');
+        .setFooter(`[Arguments] are mostly optional. Type ${prefix}help detailed for more info.`);
 }
 
 async function createDetailedHelpEmbed(message) {
@@ -118,12 +118,30 @@ async function createDetailedHelpEmbed(message) {
         .setThumbnail(`${client.user.avatarURL}`)
         .setColor(colorRole ? colorRole.color : 'BLUE')
         .addField('Cleanup:', '```>cleanup messages [amount to search] [@username]```' +
-            'Defaults to fetching the last 10 messages in that channel and removes them all.\n' +
-            'Adding a user mention will delete messages from only that user, however,' +
+            'Defaults to fetching the last 10 messages in that channel and removes them all.' +
+            ' Adding a user mention will delete messages from only that user, however,' +
             ' the amount to search still includes all messages.\n' +
             '```>cleanup roles [role name]```' +
             `Defaults to removing all roles named ${botRole} (bot-created role name).` +
-            ' Otherwise removes all roles with the specified name.')
+            ' Otherwise removes all roles with the specified name.\n' +
+            '```>cleanup calls [call name]```' +
+            'Call name is required. Removes all voice channels with the specified name.\n')
+        .addField('Information:', '```>help [detailed?]```' +
+            'Sends a message in the current channel displaying the commands available.' +
+            ' If `true` or `detailed` is supplied, a direct message with command descriptions is sent instead.\n' +
+            '```>userinfo [@username]```' +
+            'Sends a message in the current channel displaying information about the the current user.' +
+            ' If a mention `@username` is supplied, information about that user is sent instead.\n' +
+            '```>serverinfo```' +
+            'Sends a message in the current channel displaying information about the current server.\n')
+        .addField('Colour:', '```>colour [0-255] [0-255] [0-255]```' +
+            'Gives the user a colour using supplied red, green and blue values. If none are supplied,' +
+            ' the values are randomized. If the user has a role which controls their colour, that role is changed.' +
+            ' If not, a role is created and given to them.\n')
+        .addField('Create:', '```>create [call name] [@users to allow]```' +
+            'Call name is required. Creates a private voice channel with the specified name. All permissions are ' +
+            ' disabled for everyone but the user that requested the call. If other users are mentioned (`@username`)' +
+            ' they will also be given permissions. If you want a call to be public, use the `@everyone` mention.\n')
         .setFooter('Not complete yet. This will have more info later.');
 }
 
@@ -162,6 +180,13 @@ async function createVoiceChannel(message, args) {
             }).catch(console.error);
         }
     );
+    if (message.mentions.everyone) {
+        await channel.overwritePermissions(message.guild.id, {
+            CONNECT: true,
+            VIEW_CHANNEL: true,
+            SPEAK: true
+        }).catch(console.error);
+    }
 }
 
 function getColour(args) {
