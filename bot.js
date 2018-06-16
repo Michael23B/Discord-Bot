@@ -9,6 +9,11 @@ const botRole = '^-^';
 
 const readFile = util.promisify(fs.readFile);
 
+//TODO: move these along with the question commands
+let askingQuestion = false;
+let currAsker = "";
+let currAnswer = "";
+
 client.on('ready', async () => {
     console.log(client.user.username + ' ready for deployment sir.\n');
     //let link = await client.generateInvite(['ADMINISTRATOR']).catch(console.error);
@@ -72,6 +77,7 @@ async function executeCommand(message) {
             cleanUp(message, args).catch(console.error);
             break;
         case `${prefix}question`:
+            //TODO: obviously needs to be cleaned up and moved
             let questions = await getQuestionsObject() || [];
 
             if (args[0] === 'get') {
@@ -80,9 +86,32 @@ async function executeCommand(message) {
             }
 
             if (args[0] === 'ask') {
-                await createQuestionEmbed(message, questions[Math.floor(Math.random() * questions.length)])
+                if (askingQuestion) {
+                    message.reply(`please wait for ${currAsker} to answer first.`);
+                    return;
+                }
+
+                let randIndex = Math.floor(Math.random() * questions.length);
+                await createQuestionEmbed(message, questions[randIndex])
                     .then(embed => message.channel.send(embed).catch(console.error))
                     .catch(console.error);
+
+                askingQuestion = true;
+                currAnswer = questions[randIndex].answer;
+                currAsker = message.author.username;
+
+                return;
+            }
+
+            if (args[0] === 'answer') {
+                if (!askingQuestion) {
+                    message.reply('please ask a question first!');
+                }
+                else if (Array.prototype.join.call(args.slice(1), " ") === currAnswer) {
+                    message.reply('^-^ yaaay~ you did it senpai! :)))');
+                }
+                else message.reply('v-v wrong answer sir.....:(.......');
+                askingQuestion = false;
                 return;
             }
 
@@ -179,7 +208,7 @@ async function createQuestionEmbed(message, question) {
     return new Discord.RichEmbed()
         .setTitle(`Question for ${message.author.username}`)
         .setImage(question.image)
-        .setColor(member ? member.colorRole.color : 'BLUE')
+        .setColor(member.colorRole ? member.colorRole.color : 'BLUE')
         .addField('Question:', `${question.question}`);
 }
 
@@ -299,7 +328,6 @@ async function cleanUp(message, args) {
 
 async function getQuestionsObject() {
     return await readFile('./data/questions.json').then(data => JSON.parse(data)).catch(console.error);
-
 }
 
 //Helper functions
