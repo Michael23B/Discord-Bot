@@ -1,8 +1,13 @@
 const settings = require('./settings.json');
 const Discord = require('discord.js');
+const fs = require('fs');
+const util = require('util');
+
 const client = new Discord.Client();
 const prefix = settings.prefix;
 const botRole = '^-^';
+
+const readFile = util.promisify(fs.readFile);
 
 client.on('ready', async () => {
     console.log(client.user.username + ' ready for deployment sir.\n');
@@ -19,7 +24,7 @@ client.on('message', async message => {
 });
 
 client.login(settings.token).catch(console.error);
-//TODO: move command definitions to another file
+//TODO: move command definitions to another file, check for permissions before allowing some commands
 async function executeCommand(message) {
     let args = message.content.split(' ');
     let command = args[0];
@@ -60,11 +65,28 @@ async function executeCommand(message) {
                 .then(updated => message.reply(`colour set to ${updated.hexColor}`))
                 .catch(console.error);
             break;
-        case `${prefix}create`:
+        case `${prefix}call`:
             await createVoiceChannel(message, args);
             break;
         case `${prefix}cleanup`:
             cleanUp(message, args).catch(console.error);
+            break;
+        case `${prefix}question`:
+            let questions = await getQuestionsObject() || [];
+
+            if (args[0] === 'get') {
+                console.log(questions);
+                return;
+            }
+
+            let newQuestion = await {
+                question: args[0],
+                image: await message.attachments.first().url,
+                answer: Array.prototype.join.call(args.slice(1), " ")
+            };
+
+            questions.push(newQuestion);
+            fs.writeFile("./data/questions.json", JSON.stringify(questions, null, 4), () => console.error);
             break;
         default:
             message.reply(`${command} is not a recognized command!`);
@@ -107,7 +129,7 @@ async function createHelpEmbed(message) {
             '>userinfo [@username]\n' +
             '>serverinfo```')
         .addField('Colour:', '```>colour [0-255] [0-255] [0-255]```')
-        .addField('Create:', '```>create [call name] [@users to allow]```')
+        .addField('Call:', '```>call [call name] [@users to allow]```')
         .setFooter(`[Arguments] are mostly optional. Type ${prefix}help detailed for more info.`);
 }
 
@@ -138,7 +160,7 @@ async function createDetailedHelpEmbed(message) {
             'Gives the user a colour using supplied red, green and blue values. If none are supplied,' +
             ' the values are randomized. If the user has a role which controls their colour, that role is changed.' +
             ' If not, a role is created and given to them.\n')
-        .addField('Create:', '```>create [call name] [@users to allow]```' +
+        .addField('Call:', '```>call [call name] [@users to allow]```' +
             'Call name is required. Creates a private voice channel with the specified name. All permissions are ' +
             ' disabled for everyone but the user that requested the call. If other users are mentioned (`@username`)' +
             ' they will also be given permissions. If you want a call to be public, use the `@everyone` mention.\n')
@@ -180,6 +202,7 @@ async function createVoiceChannel(message, args) {
             }).catch(console.error);
         }
     );
+
     if (message.mentions.everyone) {
         await channel.overwritePermissions(message.guild.id, {
             CONNECT: true,
@@ -187,6 +210,9 @@ async function createVoiceChannel(message, args) {
             SPEAK: true
         }).catch(console.error);
     }
+
+    let category = await message.guild.channels.find(x => x.type === 'category' && x.name === 'Voice Channels');
+    if (category) channel.setParent(category).catch(console.error);
 }
 
 function getColour(args) {
@@ -241,7 +267,7 @@ async function cleanUp(message, args) {
             return;
         }
         let channelName = Array.prototype.join.call(args.slice(1), " ");
-        let channels = message.guild.channels.filter(x => x.name === channelName);
+        let channels = message.guild.channels.filter(x => x.name === channelName && x.type === 'voice');
         channels.forEach(entry => {
             entry.delete();
         });
@@ -253,6 +279,10 @@ async function cleanUp(message, args) {
     }
 
     message.reply('all done');
+}
+
+async function getQuestionsObject() {
+    return await readFile('./data/questions.json').then(data => JSON.parse(data)).catch(console.error);
 }
 
 //Helper functions
