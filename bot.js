@@ -79,6 +79,13 @@ async function executeCommand(message) {
                 return;
             }
 
+            if (args[0] === 'ask') {
+                await createQuestionEmbed(message, questions[Math.floor(Math.random() * questions.length)])
+                    .then(embed => message.channel.send(embed).catch(console.error))
+                    .catch(console.error);
+                return;
+            }
+
             let newQuestion = await {
                 question: args[0],
                 image: await message.attachments.first().url,
@@ -165,6 +172,15 @@ async function createDetailedHelpEmbed(message) {
             ' disabled for everyone but the user that requested the call. If other users are mentioned (`@username`)' +
             ' they will also be given permissions. If you want a call to be public, use the `@everyone` mention.\n')
         .setFooter('Not complete yet. This will have more info later.');
+}
+
+async function createQuestionEmbed(message, question) {
+    let member = await message.guild.members.find(x => x.user === message.author);
+    return new Discord.RichEmbed()
+        .setTitle(`Question for ${message.author.username}`)
+        .setImage(question.image)
+        .setColor(member ? member.colorRole.color : 'BLUE')
+        .addField('Question:', `${question.question}`);
 }
 
 async function getRolesString(rolesCollection) {
@@ -283,6 +299,7 @@ async function cleanUp(message, args) {
 
 async function getQuestionsObject() {
     return await readFile('./data/questions.json').then(data => JSON.parse(data)).catch(console.error);
+
 }
 
 //Helper functions
