@@ -8,5 +8,10 @@
         "question": "number-of-plant?",
         "image": "https://cdn.discordapp.com/attachments/453053444547280910/457355743440404500/7e359bbc00.png",
         "answer": "4"
+    },
+    {
+        "question": "this-is-meme?",
+        "image": "https://cdn.discordapp.com/attachments/453053444547280910/457399280802463745/1so7yh.png",
+        "answer": "answer is meme"
     }
 ]
