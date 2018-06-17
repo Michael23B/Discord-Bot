@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+const helpers = require('../helpers.js');
 
 module.exports.run = async(client, message, args) => {
     let user =  message.mentions.members.first() || message.guild.members.find(x => x.user === message.author);
@@ -7,7 +8,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 async function createUserInfoEmbed(member) {
-    let roles = await getRolesString(member.roles);
+    let roles = await helpers.getRolesString(member.roles);
     return new Discord.RichEmbed()
         .setTitle(`User info - ${member.user.username}`)
         .setImage(member.user.avatarURL)
@@ -15,13 +16,4 @@ async function createUserInfoEmbed(member) {
         .addField('Full username:', `${member.user.username}#${member.user.discriminator}`)
         .addField('Current roles:', `${roles || "None"}`)
         .addField('Joined Discord:', member.user.createdAt);
-}
-
-async function getRolesString(rolesCollection) {
-    let roles = "";
-    await rolesCollection.forEach(entry => {
-        roles += entry;
-        roles += ', ';
-    });
-    return roles = roles.slice(0, -2); //Remove trailing comma and space
 }

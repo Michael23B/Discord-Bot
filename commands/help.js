@@ -63,3 +63,5 @@ async function createDetailedHelpEmbed(client, message, args) {
             ' they will also be given permissions. If you want a call to be public, use the `@everyone` mention.\n')
         .setFooter('Not complete yet. This will have more info later.');
 }
+
+//TODO: add examples to help
