@@ -20,7 +20,7 @@ client.on('message', async message => {
     if (!message.content.startsWith(client.prefix)) return;
 
     let args = message.content.split(' ');
-    let command = args[0];
+    let command = args[0].toLowerCase();
     args = args.splice(1);
 
     let cmd = client.commands.get(command.slice(client.prefix.length));
@@ -29,6 +29,7 @@ client.on('message', async message => {
 });
 
 //Read commands from files
+//Command files are .js files that export a 'run(client, message, args)' and 'aliases[]'
 fs.readdir('./commands/', (err, files) => {
     if (err) console.error(err);
 
@@ -36,12 +37,18 @@ fs.readdir('./commands/', (err, files) => {
         console.log('No commands in ./commands/');
         return;
     }
-    console.log(`Commands found (${files.length}):`);
+
+    console.log(`${files.length} command files found:`);
     files.forEach((file, number) => {
         let cmdName = file.split('.')[0];
         let props = require(`./commands/${file}`);
-        client.commands.set(cmdName, props);
-        console.log(`${number + 1}. ${client.prefix}${cmdName} | Located "./commands/${file}"`);
+
+        //Allow access to the command through each alias
+        props.aliases.forEach(alias => {
+            client.commands.set(alias, props);
+        });
+
+        console.log(`${number + 1}. ${client.prefix}${cmdName} -> [${props.aliases}]`);
     });
 });
 
@@ -49,4 +56,4 @@ client.login(settings.token).catch(console.error);
 
 //TODO: check for permissions before allowing some commands
 //TODO: add reasons to commands to log who called the command
-//TODO: add alias for some commands. like typing >q instead of >question
+//TODO: check own permissions before trying commands

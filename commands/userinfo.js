@@ -7,6 +7,8 @@ module.exports.run = async(client, message, args) => {
     message.channel.send(userEmbed);
 };
 
+module.exports.aliases = ['userinfo', 'user', 'uinfo'];
+
 async function createUserInfoEmbed(member) {
     let roles = await helpers.getRolesString(member.roles);
     return new Discord.RichEmbed()

@@ -2,6 +2,8 @@ module.exports.run = async(client, message, args) => {
     await createVoiceChannel(message, args);
 };
 
+module.exports.aliases = ['call', 'createcall'];
+
 async function createVoiceChannel(message, args) {
     if (!args[0]) {
         message.reply('please provide a name for the channel!');
@@ -19,7 +21,13 @@ async function createVoiceChannel(message, args) {
         { id: message.guild.id, deny: ~0},
         { id: message.author.id, allow: ~0 }
     ]).catch(console.error);
-    //and mentions
+
+    //Search for the default Discord category for voice channels; if it doesn't exist, create it
+    let category = await message.guild.channels.find(x => x.type === 'category' && x.name === 'Voice Channels')
+    || await message.guild.createChannel('Voice Channels', 'category');
+    if (category) await channel.setParent(category).catch(console.error);
+
+    //Give mentioned users permissions
     message.mentions.members.forEach(async mention => {
             await channel.overwritePermissions(mention, {
                 CONNECT: true,
@@ -37,6 +45,4 @@ async function createVoiceChannel(message, args) {
         }).catch(console.error);
     }
     //FIXME: category permissions get synced which ruins the private call
-    let category = await message.guild.channels.find(x => x.type === 'category' && x.name === 'Voice Channels');
-    if (category) channel.setParent(category).catch(console.error);
 }

@@ -10,3 +10,5 @@ module.exports.run = async(client, message, args) => {
         .then(updated => message.reply(`colour set to ${updated.hexColor}`))
         .catch(console.error);
 };
+
+module.exports.aliases = ['colour', 'color', 'rgb'];

@@ -2,6 +2,8 @@ module.exports.run = async(client, message, args) => {
     cleanUp(client, message, args).catch(console.error);
 };
 
+module.exports.aliases = ['cleanup', 'clean', 'remove', 'delete'];
+
 async function cleanUp(client, message, args) {
     let deleteCount = 0;
     if (args[0] === 'roles') {

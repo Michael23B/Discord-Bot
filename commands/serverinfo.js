@@ -6,6 +6,8 @@ module.exports.run = async(client, message, args) => {
     message.channel.send(serverEmbed);
 };
 
+module.exports.aliases = ['serverinfo', 'server', 'sinfo'];
+
 async function createServerInfoEmbed(message) {
     let roles = await helpers.getRolesString(message.guild.roles);
     return new Discord.RichEmbed()

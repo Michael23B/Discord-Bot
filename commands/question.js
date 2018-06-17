@@ -66,6 +66,8 @@ module.exports.run = async(client, message, args) => {
     }
 };
 
+module.exports.aliases = ['question', 'q'];
+
 async function createQuestionEmbed(message, question) {
     let member = await message.guild.members.find(x => x.user === message.author);
     return new Discord.RichEmbed()

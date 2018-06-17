@@ -13,6 +13,8 @@ module.exports.run = async(client, message, args) => {
     }
 };
 
+module.exports.aliases = ['help', 'h', 'commands'];
+
 async function createHelpEmbed(client, message, args) {
     let colorRole = message.guild.members.find(x => x.user.username === client.user.username).colorRole;
     return new Discord.RichEmbed()
