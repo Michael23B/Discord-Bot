@@ -18,8 +18,7 @@ module.exports.run = async(client, message, args) => {
             questions.forEach(q => {
                 questionString += `Question: ${q.question}, Image: ${q.image}, Answer:${q.answer}\n`;
             });
-            message.channel.send(questionString);
-            console.log(questions);
+            message.channel.send(questionString || 'No saved questions.');
             break;
         case 'ask':
             if (askingQuestion) {
@@ -38,8 +37,9 @@ module.exports.run = async(client, message, args) => {
 
             break;
         case 'answer':
+        case 'a':
             if (!askingQuestion) {
-                message.reply('please ask a question first!');
+                message.reply('please request a question first!');
             }
             else if (Array.prototype.join.call(args.slice(1), " ") === currAnswer) {
                 message.reply('^-^ yaaay~ you did it senpai! :)))');
@@ -52,17 +52,23 @@ module.exports.run = async(client, message, args) => {
                 message.reply('make sure you\'ve attached an image and have a question and answer.');
                 break;
             }
+
             let newQuestion = await {
                 question: args[1],
                 image: await message.attachments.first().url,
-                answer: Array.prototype.join.call(args.slice(1), " ")
+                answer: Array.prototype.join.call(args.slice(2), " ")
             };
 
             questions.push(newQuestion);
             fs.writeFile("./data/questions.json", JSON.stringify(questions, null, 4), () => console.error);
+
+            let embed = await createQuestionEmbed(message, newQuestion);
+            message.reply(`I added it. Here's how it looks:`);
+            message.channel.send(embed);
+
             break;
         default:
-            message.reply('sorry I didn\'t understand that. You can try `TODO: add things you can do here`');
+            message.reply(`sorry I didn\'t understand ${message.content}. You can try \`TODO: add things you can do here\``);
     }
 };
 
