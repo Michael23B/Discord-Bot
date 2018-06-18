@@ -41,7 +41,7 @@ module.exports.run = async(client, message, args) => {
             if (!askingQuestion) {
                 message.reply('request a question first!');
             }
-            else if (Array.prototype.join.call(args.slice(1), " ") === currAnswer) {
+            else if (Array.prototype.join.call(args.slice(1), " ").ignoreCase === currAnswer.ignoreCase) {
                 message.reply('^-^ yaaay~ you did it senpai! :)))');
             }
             else message.reply('v-v wrong answer sir.....:(.......');
@@ -53,16 +53,26 @@ module.exports.run = async(client, message, args) => {
                 break;
             }
 
+            let questionEndIndex = args.findIndex(x => x.endsWith('?'));
+
+            let question = Array.prototype.join.call(args.slice(1, questionEndIndex + 1), " ");
+            let answer = Array.prototype.join.call(args.slice(questionEndIndex + 1), " ");
+
+            if (!question || !answer) {
+                message.reply('no question/answer found! Make sure your question ends with a \'?\' and the answer follows.');
+                return;
+            }
+
             let newQuestion = await {
-                question: args[1],
+                question: question,
                 image: await message.attachments.first().url,
-                answer: Array.prototype.join.call(args.slice(2), " ")
+                answer: answer
             };
 
             questions.push(newQuestion);
             fs.writeFile("./data/questions.json", JSON.stringify(questions, null, 4), () => console.error);
 
-            let embed = await createQuestionEmbed(message, newQuestion);
+            let embed = await createQuestionEmbed(message, newQuestion, true);
             message.reply(`I added it. Here's how it looks:`);
             message.channel.send(embed);
 
@@ -81,7 +91,7 @@ module.exports.run = async(client, message, args) => {
                 let removedQuestion = questions.splice((args[1] - 1), 1);
                 fs.writeFile("./data/questions.json", JSON.stringify(questions, null, 4), () => console.error);
 
-                let embed = await createQuestionEmbed(message, removedQuestion[0]);
+                let embed = await createQuestionEmbed(message, removedQuestion[0], true);
                 message.reply(`I have removed the following question:`);
                 message.channel.send(embed);
             }
@@ -93,13 +103,14 @@ module.exports.run = async(client, message, args) => {
 
 module.exports.aliases = ['question', 'q'];
 
-async function createQuestionEmbed(message, question) {
+async function createQuestionEmbed(message, question, includeAnswer) {
     let member = await message.guild.members.find(x => x.user === message.author);
     return new Discord.RichEmbed()
         .setTitle(`Question for ${message.author.username}`)
         .setImage(question.image)
         .setColor(member.colorRole ? member.colorRole.color : 'BLUE')
-        .addField('Question:', `${question.question}`);
+        .addField('Question:', `${question.question}`)
+        .setFooter(includeAnswer ? `Answer: ${question.answer}` : '')
 }
 
 async function getQuestionsObject() {
