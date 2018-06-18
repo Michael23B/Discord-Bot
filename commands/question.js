@@ -15,8 +15,8 @@ module.exports.run = async(client, message, args) => {
     switch (args[0]) {
         case 'get':
             let questionString = "";
-            questions.forEach(q => {
-                questionString += `Question: ${q.question}, Image: ${q.image}, Answer:${q.answer}\n`;
+            questions.forEach((q, i) => {
+                questionString += `Question ${i + 1}: ${q.question}, Image: ${q.image}, Answer:${q.answer}\n`;
             });
             message.channel.send(questionString || 'No saved questions.');
             break;
@@ -39,7 +39,7 @@ module.exports.run = async(client, message, args) => {
         case 'answer':
         case 'a':
             if (!askingQuestion) {
-                message.reply('please request a question first!');
+                message.reply('request a question first!');
             }
             else if (Array.prototype.join.call(args.slice(1), " ") === currAnswer) {
                 message.reply('^-^ yaaay~ you did it senpai! :)))');
@@ -66,6 +66,25 @@ module.exports.run = async(client, message, args) => {
             message.reply(`I added it. Here's how it looks:`);
             message.channel.send(embed);
 
+            break;
+        case 'delete':
+        case 'remove':
+            if (questions.length === 0) {
+                message.reply('no questions to delete.');
+            }
+            else if (isNaN(args[1])) message.reply(`supply a question index to remove it.` +
+            ` You can find the indexes using ${client.prefix}question get.`);
+            else if (args[1] > questions.length || args[1] < 1) {
+                message.reply(`supply an index between 1 and ${questions.length}.`);
+            }
+            else {
+                let removedQuestion = questions.splice((args[1] - 1), 1);
+                fs.writeFile("./data/questions.json", JSON.stringify(questions, null, 4), () => console.error);
+
+                let embed = await createQuestionEmbed(message, removedQuestion[0]);
+                message.reply(`I have removed the following question:`);
+                message.channel.send(embed);
+            }
             break;
         default:
             message.reply(`sorry I didn\'t understand ${message.content}. You can try \`TODO: add things you can do here\``);
