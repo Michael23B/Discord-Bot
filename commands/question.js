@@ -41,7 +41,8 @@ module.exports.run = async(client, message, args) => {
             if (!askingQuestion) {
                 message.reply('request a question first!');
             }
-            else if (Array.prototype.join.call(args.slice(1), " ").ignoreCase === currAnswer.ignoreCase) {
+            else if (Array.prototype.join.call(args.slice(1), " ") === currAnswer) {
+                //TODO: ignore case
                 message.reply('^-^ yaaay~ you did it senpai! :)))');
             }
             else message.reply('v-v wrong answer sir.....:(.......');

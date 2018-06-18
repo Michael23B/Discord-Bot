@@ -44,5 +44,4 @@ async function createVoiceChannel(message, args) {
             SPEAK: true
         }).catch(console.error);
     }
-    //FIXME: category permissions get synced which ruins the private call
 }
