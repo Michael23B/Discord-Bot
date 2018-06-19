@@ -28,7 +28,7 @@ async function createHelpEmbed(client, message, args) {
             '>userinfo [@username]\n' +
             '>serverinfo```')
         .addField('Colour:', '```>colour [0-255] [0-255] [0-255] [@username]```')
-        .addField('Call:', '```>call [call name] [@users to allow]```')
+        .addField('Call:', '```>call [call name] [lifetime (minutes)] [@users to allow]```')
         .addField('Questions:', '```>question add [question]? [answer] (attach image)\n' +
             '>question ask\n' +
             '>answer [your answer]\n' +
@@ -67,10 +67,11 @@ async function createDetailedHelpEmbed(client, message, args) {
             ' the values are randomized. Target user defaults to yourself. If the user has a role which controls their colour,' +
             '  that role is changed. If not, a role is created and given to them.\n' +
             '`>colour, >color, >rgb`\n')
-        .addField('Call:', '```>call [call name] [@users to allow]```' +
+        .addField('Call:', '```>call [call name] [lifetime (minutes)] [@users to allow]```' +
             'Call name is required. Creates a private voice channel with the specified name. All permissions are ' +
             ' disabled for everyone but the user that requested the call. If other users are mentioned (`@username`)' +
-            ' they will also be given permissions. If you want a call to be public, use the `@everyone` mention.\n' +
+            ' they will also be given permissions. If you want a call to be public, use the `@everyone` mention.' +
+            ' Calls are created for 60 minutes by default. Values above 1440 (a day) will not be deleted.\n' +
             '`>call, >createcall`\n')
         .addField('Questions:', '```>question add [question]? [answer] (attach image)```' +
             'All fields required. Creates a question with the text preceding the \'?\', the text after is the answer' +

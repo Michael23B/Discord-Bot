@@ -19,6 +19,12 @@ module.exports.getNewRole = async function(message, name) {
     }).catch(console.error);
 };
 
+module.exports.safeDeleteChannel = async function(guild, callId) {
+    let call = guild.channels.find(x => x.id === callId);
+    if (!call || call.members.first()) return;
+    call.delete().catch(console.error);
+};
+
 //
 //Standard functions
 //
