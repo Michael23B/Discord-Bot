@@ -27,7 +27,7 @@ async function createHelpEmbed(client, message, args) {
         .addField('Information:', '```>help [detailed?]\n' +
             '>userinfo [@username]\n' +
             '>serverinfo```')
-        .addField('Colour:', '```>colour [0-255] [0-255] [0-255]```')
+        .addField('Colour:', '```>colour [0-255] [0-255] [0-255] [@username]```')
         .addField('Call:', '```>call [call name] [@users to allow]```')
         .addField('Questions:', '```>question add [question]? [answer] (attach image)\n' +
             '>question ask\n' +
@@ -62,10 +62,10 @@ async function createDetailedHelpEmbed(client, message, args) {
             '```>serverinfo```' +
             'Sends a message in the current channel displaying information about the current server.\n' +
             '`>userinfo, >user, >uinfo, >serverinfo, >server, >sinfo`\n')
-        .addField('Colour:', '```>colour [0-255] [0-255] [0-255]```' +
+        .addField('Colour:', '```>colour [0-255] [0-255] [0-255] [@username]```' +
             'Gives the user a colour using supplied red, green and blue values. If none are supplied,' +
-            ' the values are randomized. If the user has a role which controls their colour, that role is changed.' +
-            ' If not, a role is created and given to them.\n' +
+            ' the values are randomized. Target user defaults to yourself. If the user has a role which controls their colour,' +
+            '  that role is changed. If not, a role is created and given to them.\n' +
             '`>colour, >color, >rgb`\n')
         .addField('Call:', '```>call [call name] [@users to allow]```' +
             'Call name is required. Creates a private voice channel with the specified name. All permissions are ' +
@@ -82,9 +82,9 @@ async function createDetailedHelpEmbed(client, message, args) {
             '```>question get```' +
             'Fetches all saved questions.\n' +
             '```>question remove [index]```' +
-            'Removes the question at the index provided. You see question indexes using `>question get`\n' +
+            'Removes the question at the index provided. You can see question indexes using `>question get`\n' +
             '`>question, >q, >answer, >a`')
         .setFooter('Not complete yet. This will have more info later.');
 }
 
-//TODO: add examples to help
+//TODO: add examples to help, put help strings in the command files and pull them from there

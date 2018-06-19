@@ -34,17 +34,11 @@ module.exports.clamp = function(n, min, max) {
 
 module.exports.getColour = function(args) {
     let colour = [];
-    //User supplied rgb values
-    if (!isNaN(args[0]) && !isNaN(args[1]) && !isNaN(args[2])) {
-        colour[0] = this.clamp(args[0], 1, 255);
-        colour[1] = this.clamp(args[1], 1, 255);
-        colour[2] = this.clamp(args[2], 1, 255);
-    }
-    //Otherwise generate a random colour
-    else {
-        colour[0] = this.getRandomInt(1,256);
-        colour[1] = this.getRandomInt(1,256);
-        colour[2] = this.getRandomInt(1,256);
-    }
+
+    //Clamp user supplied RGB values when supplied, otherwise generate a random value
+    colour[0] = isNaN(args[0]) ? this.getRandomInt(1,256) : this.clamp(args[0], 1, 255);
+    colour[1] = isNaN(args[1]) ? this.getRandomInt(1,256) : this.clamp(args[1], 1, 255);
+    colour[2] = isNaN(args[2]) ? this.getRandomInt(1,256) : this.clamp(args[2], 1, 255);
+
     return colour;
 };

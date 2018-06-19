@@ -22,6 +22,9 @@ async function createVoiceChannel(message, args) {
         { id: message.author.id, allow: ~0 }
     ]).catch(console.error);
 
+    //TODO:temporary channel arguments
+    //setTimeout(() => channel.delete(), 5000);
+
     //Search for the default Discord category for voice channels; if it doesn't exist, create it
     let category = await message.guild.channels.find(x => x.type === 'category' && x.name === 'Voice Channels')
     || await message.guild.createChannel('Voice Channels', 'category');
