@@ -9,6 +9,7 @@
   "author": "Michael Burnett",
   "license": "ISC",
   "dependencies": {
+    "colorsys": "^1.0.21",
     "discord.js": "^11.3.2"
   },
   "devDependencies": {
