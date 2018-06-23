@@ -10,49 +10,54 @@ module.exports.run = async(client, message, args) => {
     let loadingMsg = await message.channel.send('Searching Simpsons database...').catch(console.error);
 
     let query = Array.prototype.join.call(args.slice(0), " ");
-    let url = query ? `https://frinkiac.com/api/search?q=${query}` : 'https://frinkiac.com/api/random';
+    let url = buildQueryUrl(query);
 
     let resultsObj = await superagent.get(url)
         .then(res => res.body)
         .catch(console.error);
 
-    if (!query) {
-        let imgUrl = `https://frinkiac.com/img/${resultsObj.Frame.Episode}/${resultsObj.Frame.Timestamp}.jpg`;
+    if (!resultsObj || resultsObj.length === 0) {
+        loadingMsg.edit(`Couldn't find any frames from the query "${query}"`);
+        return;
+    }
+
+    if (!query) { //If we have no query, we got a random image
+        let imgUrl = buildImageUrl(resultsObj.Frame.Episode, resultsObj.Frame.Timestamp);
         await message.channel.send(`Result for random search`, {files: [imgUrl]});
         return;
     }
 
-    let info = await generateDetails(resultsObj);
+    //Retrieve information about a few frames from the results object
+    let sampleFrames = await getSampleFrameData(resultsObj);
+    console.log(sampleFrames);
+    return;
+    //Create an embed with the sample frame info for users to vote on
+    let embed = getSampledFramesEmbed(sampleFrames, query);
 
-    let embed = getResultsSampleEmbed(info, query);
-
-    let msg = await message.channel.send(embed);
+    let voteMessage = await message.channel.send(embed);
     loadingMsg.delete();
 
-    await msg.react('1⃣').catch(console.error);
-    await msg.react('2⃣').catch(console.error);
-    await msg.react('3⃣').catch(console.error);
-    await msg.react('4⃣').catch(console.error);
+    let winningIndex = await awaitWinningFrame(voteMessage, 10000).catch(console.error);
 
-    let winningIndex = await msg.awaitReactions(filter, { time: 7500 })
-        .then(collected => selectWinningEmoji(collected))
-        .catch(console.error);
-
-    let imgUrl = `https://frinkiac.com/img/${resultsObj[winningIndex].Episode}/${resultsObj[winningIndex].Timestamp}.jpg`;
+    let imgUrl = buildImageUrl(resultsObj[winningIndex].Episode, resultsObj[winningIndex].Timestamp);
 
     message.channel.send(await getImageEmbed(imgUrl, query, winningIndex));
-    msg.delete();
+    voteMessage.delete();
 };
 module.exports.aliases = ['simpsons', 'simpson'];
 
-function getResultsSampleEmbed(info, query) {
+function getSampledFramesEmbed(info, query) {
     return new Discord.RichEmbed()
         .setTitle(`Results for "${query}"`)
         .setColor('GOLD')
-        .addField(`1.`, `**Title**: ${info[0].Episode.Title}\n**Subtitle**: ${info[0].Subtitles[0].Content}\n**Frame**: ${info[0].Frame.Timestamp}`)
-        .addField(`2.`, `**Title**: ${info[1].Episode.Title}\n**Subtitle**: ${info[1].Subtitles[0].Content}\n**Frame**: ${info[1].Frame.Timestamp}`)
-        .addField(`3.`, `**Title**: ${info[2].Episode.Title}\n**Subtitle**: ${info[2].Subtitles[0].Content}\n**Frame**: ${info[2].Frame.Timestamp}`)
-        .addField(`4.`, `**Title**: ${info[3].Episode.Title}\n**Subtitle**: ${info[3].Subtitles[0].Content}\n**Frame**: ${info[3].Frame.Timestamp}`)
+        .addField(`1. Season ${info[0].Episode.Season} | Episode ${info[0].Episode.EpisodeNumber}`,
+            `Title: \`${info[0].Episode.Title}\`\nSubtitles: \`${info[0].Subtitles[0].Content}\``, true)
+        .addField(`2. Season ${info[1].Episode.Season} | Episode ${info[1].Episode.EpisodeNumber}`,
+            `Title: \`${info[1].Episode.Title}\`\nSubtitles: \`${info[1].Subtitles[0].Content}\``, true)
+        .addField(`3. Season ${info[2].Episode.Season} | Episode ${info[2].Episode.EpisodeNumber}`,
+            `Title: \`${info[2].Episode.Title}\`\nSubtitles: \`${info[2].Subtitles[0].Content}\``, true)
+        .addField(`4. Season ${info[3].Episode.Season} | Episode ${info[3].Episode.EpisodeNumber}`,
+            `Title: \`${info[3].Episode.Title}\`\nSubtitles: \`${info[3].Subtitles[0].Content}\``, true)
         .setFooter('React to select image.');
 }
 
@@ -64,19 +69,31 @@ function getImageEmbed(imgUrl, query, winningIndex) {
         .setFooter('React to go to the next or previous frame.');
 }
 
+//Awaits reactions on the voteMessage for timeToWait and then returns an array index for the winning frame
+async function awaitWinningFrame(voteMessage, timeToWait) {
+    await voteMessage.react('1⃣').catch(console.error);
+    await voteMessage.react('2⃣').catch(console.error);
+    await voteMessage.react('3⃣').catch(console.error);
+    await voteMessage.react('4⃣').catch(console.error);
 
+    return await voteMessage.awaitReactions(filter, { time: timeToWait })
+        .then(collected => selectWinningEmoji(collected))
+        .catch(console.error);
+}
+
+//Returns a number based on the emoji with the most reactions
 function selectWinningEmoji(collected) {
-    let maxCount = 0;
-    let maxEmoji = '1⃣';
+    let maxCount = 1;
+    let winningEmoji = '1⃣';
 
     collected.forEach(entry => {
         if (entry.count > maxCount) {
             maxCount = entry.count;
-            maxEmoji = entry._emoji.name;
+            winningEmoji = entry._emoji.name;
         }
     });
 
-    switch (maxEmoji) {
+    switch (winningEmoji) {
         case '1⃣':
             return 0;
         case '2⃣':
@@ -88,22 +105,56 @@ function selectWinningEmoji(collected) {
     }
 }
 
-async function generateDetails(results) {
+async function getSampleFrameData(results) {
+    let episodeFrameMap = {};
+    //Find up to 3 frames from distinct episodes
+    for (let i = 0; i < results.length; ++i) {
+        if (Object.keys(episodeFrameMap).length === 3) break;
+
+        //Property name = episode, property value = timestamp
+        if (!episodeFrameMap.hasOwnProperty(results[i].Episode)) {
+            let entryName = results[i].Episode;
+            episodeFrameMap[entryName] = results[i].Timestamp;
+        }
+    }
+
     let frameData = [];
 
-    for (let i = 0; i < 4; ++i) {
-        frameData[i] = await getFrameInfo(results[i].Episode, results[i].Timestamp);
-    }
+    //Get the frame data for each episodes chosen frame, as well as two nearby frames
+    await Object.keys(episodeFrameMap).forEach(async key => {
+        frameData.push(await getFrameData(key, episodeFrameMap[key]));
+
+        let nearbyFrame1 = frameData[frameData.length - 1].Nearby.first();
+        let nearbyFrame2 = frameData[frameData.length - 1].Nearby.last();
+
+        frameData.push(await getFrameData(key, nearbyFrame1));
+        frameData.push(await getFrameData(key, nearbyFrame2));
+    });
 
     return frameData;
 }
 
-async function getFrameInfo(episode, frame) {
-    let url = `https://frinkiac.com/api/caption?e=${episode}&t=${frame}`;
+async function getFrameData(episode, frame) {
+    let url = buildFrameUrl(episode, frame);
 
     return await superagent.get(url)
         .then(res => res.body)
         .catch(console.error);
 }
 
-//TODO: clean up the urls everywhere and replace with variables
+function buildImageUrl(episode, frame) {
+    return `https://frinkiac.com/img/${episode}/${frame}.jpg`;
+}
+
+function buildQueryUrl(query) {
+    return query ? `https://frinkiac.com/api/search?q=${query}` : 'https://frinkiac.com/api/random';
+}
+
+function buildFrameUrl(episode, frame) {
+    return `https://frinkiac.com/api/caption?e=${episode}&t=${frame}`;
+}
+
+//First get each unique episode based on the given quote
+//Next generate a result object for each episodes frame
+//Then get the image at that frame using this url - https://frinkiac.com/api/caption?e=S05E03&t=512110
+//Using that object we can move forward and backwards a few frames at a time using react emojis
