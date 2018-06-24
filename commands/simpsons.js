@@ -1,10 +1,13 @@
 const superagent = require('superagent');
 const Discord = require('discord.js');
 
-const filter = (reaction) => reaction.emoji.name === '1⃣'
-    || reaction.emoji.name === '2⃣'
-    || reaction.emoji.name === '3⃣'
-    || reaction.emoji.name === '4⃣';
+const numberFilter = (reaction) => reaction.emoji.name === '1⃣' || reaction.emoji.name === '2⃣'
+    || reaction.emoji.name === '3⃣' || reaction.emoji.name === '4⃣'
+    || reaction.emoji.name === '5⃣' || reaction.emoji.name === '6⃣';
+
+const nextPrevFilter = (reaction) => reaction.emoji.name === '⏮' || reaction.emoji.name === '⏭';
+
+const voteReactions = ['1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣'];
 
 module.exports.run = async(client, message, args) => {
     let loadingMsg = await message.channel.send('Searching Simpsons database...').catch(console.error);
@@ -29,37 +32,77 @@ module.exports.run = async(client, message, args) => {
 
     //Retrieve information about a few frames from the results object
     let sampleFrames = await getSampleFrameData(resultsObj);
-    console.log(sampleFrames);
-    return;
+
     //Create an embed with the sample frame info for users to vote on
     let embed = getSampledFramesEmbed(sampleFrames, query);
 
-    let voteMessage = await message.channel.send(embed);
     loadingMsg.delete();
+    let voteMessage = null;
+    let winningIndex;
 
-    let winningIndex = await awaitWinningFrame(voteMessage, 10000).catch(console.error);
+    //If there are multiple frames, we wait for users to vote
+    if (embed) {
+        voteMessage = await message.channel.send(embed);
+        winningIndex = await awaitWinningFrame(voteMessage, 10000, sampleFrames.length).catch(console.error);
+    }
+    else winningIndex = 0;
 
-    let imgUrl = buildImageUrl(resultsObj[winningIndex].Episode, resultsObj[winningIndex].Timestamp);
+    let imgUrl = buildImageUrl(sampleFrames[winningIndex].Frame.Episode, sampleFrames[winningIndex].Frame.Timestamp);
 
-    message.channel.send(await getImageEmbed(imgUrl, query, winningIndex));
-    voteMessage.delete();
+    let frameMessage = await message.channel.send(await getImageEmbed(imgUrl, query, winningIndex));
+    if (voteMessage) voteMessage.delete();
+
+    //TODO: put all this in it's own function
+    //start loop of waiting for next and prev reactions
+    //if none are chosen remove the reactions and stop checking
+    let frameChange;
+    let nearbyIndex = 3;
+    while (true) {
+        frameChange = await awaitFrameChange(frameMessage, 10000);
+        if (!frameChange) break;
+
+        let newUrl;
+
+        if (frameChange === 'next') {
+            let nearby = sampleFrames[winningIndex].Nearby;
+            nearbyIndex++;
+            //Reached the final nearby frame, get the info for that last frame so we get a new set of nearby frames
+            if (nearbyIndex >= nearby.Length) {
+                sampleFrames[winningIndex] = await getFrameData(nearby[nearby.length - 1].Episode,
+                                                                nearby[nearby.length - 1].Timestamp);
+                nearbyIndex = 4;
+                nearby = sampleFrames[winningIndex].Nearby;
+            }
+            newUrl = await buildImageUrl(nearby[nearbyIndex].Episode, nearby[nearbyIndex].Timestamp);
+        }
+        else {
+
+        }
+
+        frameMessage.edit(newUrl);
+    }
+
+    frameMessage.clearReactions().catch(console.error);
 };
+
 module.exports.aliases = ['simpsons', 'simpson'];
 
 function getSampledFramesEmbed(info, query) {
-    return new Discord.RichEmbed()
+    if (info.length === 1) return null;
+
+    let embed = new Discord.RichEmbed()
         .setTitle(`Results for "${query}"`)
         .setColor('GOLD')
-        .addField(`1. Season ${info[0].Episode.Season} | Episode ${info[0].Episode.EpisodeNumber}`,
-            `Title: \`${info[0].Episode.Title}\`\nSubtitles: \`${info[0].Subtitles[0].Content}\``, true)
-        .addField(`2. Season ${info[1].Episode.Season} | Episode ${info[1].Episode.EpisodeNumber}`,
-            `Title: \`${info[1].Episode.Title}\`\nSubtitles: \`${info[1].Subtitles[0].Content}\``, true)
-        .addField(`3. Season ${info[2].Episode.Season} | Episode ${info[2].Episode.EpisodeNumber}`,
-            `Title: \`${info[2].Episode.Title}\`\nSubtitles: \`${info[2].Subtitles[0].Content}\``, true)
-        .addField(`4. Season ${info[3].Episode.Season} | Episode ${info[3].Episode.EpisodeNumber}`,
-            `Title: \`${info[3].Episode.Title}\`\nSubtitles: \`${info[3].Subtitles[0].Content}\``, true)
         .setFooter('React to select image.');
+
+    for (let i = 0; i < info.length; ++i) {
+        embed.addField(`${i+1}. Season ${info[i].Episode.Season} | Episode ${info[i].Episode.EpisodeNumber}`,
+            `Title: \`${info[i].Episode.Title}\`\nSubtitles: \`${info[i].Subtitles[0].Content}\``)
+    }
+
+    return embed;
 }
+//TODO: find the Subtitles[].Content that matches the timestamp most closely instead of using [0]
 
 function getImageEmbed(imgUrl, query, winningIndex) {
     return new Discord.RichEmbed()
@@ -70,14 +113,23 @@ function getImageEmbed(imgUrl, query, winningIndex) {
 }
 
 //Awaits reactions on the voteMessage for timeToWait and then returns an array index for the winning frame
-async function awaitWinningFrame(voteMessage, timeToWait) {
-    await voteMessage.react('1⃣').catch(console.error);
-    await voteMessage.react('2⃣').catch(console.error);
-    await voteMessage.react('3⃣').catch(console.error);
-    await voteMessage.react('4⃣').catch(console.error);
+async function awaitWinningFrame(voteMessage, timeToWait, count) {
+    for (let i = 0; i < count; ++i) {
+        await voteMessage.react(voteReactions[i]).catch(console.error);
+    }
 
-    return await voteMessage.awaitReactions(filter, { time: timeToWait })
+    return await voteMessage.awaitReactions(numberFilter, { time: timeToWait })
         .then(collected => selectWinningEmoji(collected))
+        .catch(console.error);
+}
+
+//Await next/prev reactions and returns a url to the selected frame or null if none are chosen
+async function awaitFrameChange(message, timeToWait) {
+    await message.react('⏮').catch(console.error);
+    await message.react('⏭').catch(console.error);
+
+    return await message.awaitReactions(nextPrevFilter, { time: timeToWait })
+        .then(collected => determineNextOrPrev(collected))
         .catch(console.error);
 }
 
@@ -102,34 +154,59 @@ function selectWinningEmoji(collected) {
             return 2;
         case '4⃣':
             return 3;
+        case '5⃣':
+            return 4;
+        case '6⃣':
+            return 5;
+        default:
+            return 0;
     }
+    //TODO: Could probably extract the number out of this instead of the switch case, same deal with the voteReactions[]
+}
+
+function determineNextOrPrev(collected) {
+    let maxCount = 1;
+    let result = null;
+
+    collected.forEach(entry => {
+        if (entry.count > maxCount) {
+            maxCount = entry.count;
+            if (entry._emoji.name === '⏮') result = 'prev';
+            else if (entry._emoji.name === '⏭') result = 'next';
+        }
+    });
+
+    return result;
 }
 
 async function getSampleFrameData(results) {
-    let episodeFrameMap = {};
-    //Find up to 3 frames from distinct episodes
+    let episodeFrameMap = [];
+    //Find up to 4 frames from distinct episodes
     for (let i = 0; i < results.length; ++i) {
-        if (Object.keys(episodeFrameMap).length === 3) break;
+        if (episodeFrameMap.length === 4) break;
 
-        //Property name = episode, property value = timestamp
-        if (!episodeFrameMap.hasOwnProperty(results[i].Episode)) {
-            let entryName = results[i].Episode;
-            episodeFrameMap[entryName] = results[i].Timestamp;
+        //If we don't have a frame from this episode, add this episode/frame pair
+        if (!episodeFrameMap.find(x => x.Episode === results[i].Episode)) {
+            episodeFrameMap.push({Episode: results[i].Episode, Timestamp: results[i].Timestamp});
         }
     }
 
     let frameData = [];
 
-    //Get the frame data for each episodes chosen frame, as well as two nearby frames
-    await Object.keys(episodeFrameMap).forEach(async key => {
-        frameData.push(await getFrameData(key, episodeFrameMap[key]));
+    //Get the frame data for each episodes chosen frame
+    for (let i = 0; i < episodeFrameMap.length; ++i) {
+        await frameData.push(await getFrameData(episodeFrameMap[i].Episode, episodeFrameMap[i].Timestamp));
 
-        let nearbyFrame1 = frameData[frameData.length - 1].Nearby.first();
-        let nearbyFrame2 = frameData[frameData.length - 1].Nearby.last();
+        //TODO: use nearby frames for next and prev
+        /*
+        let nearbyArr = frameData[frameData.length - 1].Nearby;
+        let nearbyFrame1 = nearbyArr[0];
+        let nearbyFrame2 = nearbyArr[nearbyArr.length - 1];
 
-        frameData.push(await getFrameData(key, nearbyFrame1));
-        frameData.push(await getFrameData(key, nearbyFrame2));
-    });
+        await frameData.push(await getFrameData(nearbyFrame1.Episode, nearbyFrame1.Timestamp));
+        await frameData.push(await getFrameData(nearbyFrame2.Episode, nearbyFrame2.Timestamp));
+        */
+    }
 
     return frameData;
 }
@@ -153,8 +230,3 @@ function buildQueryUrl(query) {
 function buildFrameUrl(episode, frame) {
     return `https://frinkiac.com/api/caption?e=${episode}&t=${frame}`;
 }
-
-//First get each unique episode based on the given quote
-//Next generate a result object for each episodes frame
-//Then get the image at that frame using this url - https://frinkiac.com/api/caption?e=S05E03&t=512110
-//Using that object we can move forward and backwards a few frames at a time using react emojis
