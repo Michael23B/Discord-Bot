@@ -77,7 +77,7 @@ module.exports.run = async(client, message, args) => {
             imgUrl = await buildImageUrl(nearby[nearbyIndex].Episode, nearby[nearbyIndex].Timestamp);
         }
         else {
-            let nearby = sampleFrames[winningIndex].Nearby;
+            nearby = sampleFrames[winningIndex].Nearby;
             nearbyIndex--;
 
             if (nearbyIndex < 0) {
@@ -212,6 +212,7 @@ async function getSampleFrameData(results) {
     return frameData;
 }
 
+//Gets the json object for this episode/frame pair
 async function getFrameData(episode, frame) {
     let url = buildFrameUrl(episode, frame);
 
@@ -220,6 +221,7 @@ async function getFrameData(episode, frame) {
         .catch(console.error);
 }
 
+//Frinkiac URLs
 function buildImageUrl(episode, frame) {
     return `https://frinkiac.com/img/${episode}/${frame}.jpg`;
 }

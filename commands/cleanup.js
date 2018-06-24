@@ -27,7 +27,10 @@ async function cleanUp(client, message, args) {
 
         await message.channel.bulkDelete(messages);
         message.reply(`I searched through the last ${deleteCount}` +
-            ` messages and deleted ${messages.size} messages by ${user || 'everyone'}`);
+            ` messages and deleted ${messages.size} messages by ${user || 'everyone'}`)
+            .then(msg => {
+                setTimeout(() => {msg.delete()}, 5000);
+            });
     }
     else if (args[0] === 'calls') {
         if (!args[1]) {
