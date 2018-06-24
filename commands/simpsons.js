@@ -26,7 +26,8 @@ module.exports.run = async(client, message, args) => {
 
     if (!query) { //If we have no query, we got a random image
         let imgUrl = buildImageUrl(resultsObj.Frame.Episode, resultsObj.Frame.Timestamp);
-        await message.channel.send(`Result for random search`, {files: [imgUrl]});
+        await message.channel.send(``, {files: [imgUrl]});
+        loadingMsg.delete();
         return;
     }
 
@@ -49,7 +50,7 @@ module.exports.run = async(client, message, args) => {
 
     let imgUrl = buildImageUrl(sampleFrames[winningIndex].Frame.Episode, sampleFrames[winningIndex].Frame.Timestamp);
 
-    let frameMessage = await message.channel.send(await getImageEmbed(imgUrl, query, winningIndex));
+    let frameMessage = await message.channel.send(await getImageEmbed(imgUrl, query, sampleFrames[winningIndex].Frame.Timestamp));
     if (voteMessage) voteMessage.delete();
 
     //TODO: put all this in it's own function
@@ -57,29 +58,39 @@ module.exports.run = async(client, message, args) => {
     //if none are chosen remove the reactions and stop checking
     let frameChange;
     let nearbyIndex = 3;
+    let nearby;
+
     while (true) {
-        frameChange = await awaitFrameChange(frameMessage, 10000);
+        frameChange = await awaitFrameChange(frameMessage, 6500);
         if (!frameChange) break;
 
-        let newUrl;
-
         if (frameChange === 'next') {
-            let nearby = sampleFrames[winningIndex].Nearby;
+            nearby = sampleFrames[winningIndex].Nearby;
             nearbyIndex++;
             //Reached the final nearby frame, get the info for that last frame so we get a new set of nearby frames
-            if (nearbyIndex >= nearby.Length) {
+            if (nearbyIndex >= nearby.length) {
                 sampleFrames[winningIndex] = await getFrameData(nearby[nearby.length - 1].Episode,
                                                                 nearby[nearby.length - 1].Timestamp);
                 nearbyIndex = 4;
                 nearby = sampleFrames[winningIndex].Nearby;
             }
-            newUrl = await buildImageUrl(nearby[nearbyIndex].Episode, nearby[nearbyIndex].Timestamp);
+            imgUrl = await buildImageUrl(nearby[nearbyIndex].Episode, nearby[nearbyIndex].Timestamp);
         }
         else {
+            let nearby = sampleFrames[winningIndex].Nearby;
+            nearbyIndex--;
 
+            if (nearbyIndex < 0) {
+                sampleFrames[winningIndex] = await getFrameData(nearby[0].Episode,
+                    nearby[0].Timestamp);
+                nearbyIndex = 2;
+                nearby = sampleFrames[winningIndex].Nearby;
+            }
+            imgUrl = await buildImageUrl(nearby[nearbyIndex].Episode, nearby[nearbyIndex].Timestamp);
         }
 
-        frameMessage.edit(newUrl);
+        await frameMessage.delete();
+        frameMessage = await message.channel.send(await getImageEmbed(imgUrl, query, nearby[nearbyIndex].Timestamp));
     }
 
     frameMessage.clearReactions().catch(console.error);
@@ -104,9 +115,9 @@ function getSampledFramesEmbed(info, query) {
 }
 //TODO: find the Subtitles[].Content that matches the timestamp most closely instead of using [0]
 
-function getImageEmbed(imgUrl, query, winningIndex) {
+function getImageEmbed(imgUrl, query, timeStamp) {
     return new Discord.RichEmbed()
-        .setTitle(`Result for "${query}" - Frame ${winningIndex + 1}`)
+        .setTitle(`Result for "${query}" - Frame ${timeStamp}`)
         .setColor('GOLD')
         .setImage(imgUrl)
         .setFooter('React to go to the next or previous frame.');
@@ -196,16 +207,6 @@ async function getSampleFrameData(results) {
     //Get the frame data for each episodes chosen frame
     for (let i = 0; i < episodeFrameMap.length; ++i) {
         await frameData.push(await getFrameData(episodeFrameMap[i].Episode, episodeFrameMap[i].Timestamp));
-
-        //TODO: use nearby frames for next and prev
-        /*
-        let nearbyArr = frameData[frameData.length - 1].Nearby;
-        let nearbyFrame1 = nearbyArr[0];
-        let nearbyFrame2 = nearbyArr[nearbyArr.length - 1];
-
-        await frameData.push(await getFrameData(nearbyFrame1.Episode, nearbyFrame1.Timestamp));
-        await frameData.push(await getFrameData(nearbyFrame2.Episode, nearbyFrame2.Timestamp));
-        */
     }
 
     return frameData;
