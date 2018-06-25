@@ -17,6 +17,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['cat', 'cate', '🐱'];
+module.exports.permissions = ['ADMINISTRATOR'];
 
 function extractImageFromGetResult(result) {
     let stringRes = JSON.stringify(result);

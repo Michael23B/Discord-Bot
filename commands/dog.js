@@ -6,7 +6,7 @@ module.exports.run = async(client, message, args) => {
     let doggoUrl = await superagent.get('https://random.dog/woof.json').then(res => res.body.url);
 
     if (doggoUrl) {
-        loadingMsg.edit('Ok I found a dog, it\'s loading. 👉 🐶');
+        loadingMsg.edit('Ok I found a dog, it\'s loading... 👉 🐶');
         await message.channel.send('', {files: [doggoUrl]}).catch(console.error);
     }
     else message.channel.send('I couldn\'t find any dogs. :(').catch(console.error);

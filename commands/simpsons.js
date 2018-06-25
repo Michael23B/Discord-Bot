@@ -44,7 +44,8 @@ module.exports.run = async(client, message, args) => {
     //If there are multiple frames, we wait for users to vote
     if (embed) {
         voteMessage = await message.channel.send(embed);
-        winningIndex = await awaitWinningFrame(voteMessage, 10000, sampleFrames.length).catch(console.error);
+        winningIndex = await awaitWinningFrameTest(voteMessage, 10000, sampleFrames.length).catch(console.error);
+        return;
     }
     else winningIndex = 0;
 
@@ -133,6 +134,21 @@ async function awaitWinningFrame(voteMessage, timeToWait, count) {
         .then(collected => selectWinningEmoji(collected))
         .catch(console.error);
 }
+
+//FIXME: if someone added a 5 emoji when there was only 4 results then it would error since it would pass the filter
+//(&& result < count)
+
+/*
+TODO: could change time based vote to simply change when the user who requested the image reacts using a collector
+async function awaitWinningFrameTest(voteMessage, timeToWait, count) {
+    for (let i = 0; i < count; ++i) {
+        await voteMessage.react(voteReactions[i]).catch(console.error);
+    }
+
+    let collector = voteMessage.createReactionCollector(numberFilter, { time: timeToWait });
+    collector.on('collect', r => console.log(r._emoji.name[0]));
+    collector.on('end', () => voteMessage.clearReactions());
+}*/
 
 //Await next/prev reactions and returns a url to the selected frame or null if none are chosen
 async function awaitFrameChange(message, timeToWait) {

@@ -24,6 +24,10 @@ client.on('message', async message => {
     args = args.splice(1);
 
     let cmd = client.commands.get(command.slice(client.prefix.length));
+
+    if (message.member.hasPermission(cmd.permissions)) console.log(`has permissions ${cmd.permissions}`);
+    else console.log('does not have permissions');
+
     if (cmd) cmd.run(client, message, args);
     else message.reply(`${command} is not a recognized command!`);
 });
