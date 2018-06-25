@@ -4,7 +4,7 @@ module.exports.run = async(client, message, args) => {
     let loadingMsg = await message.channel.send('Searching for cat related content...').catch(console.error);
 
     let catUrl = await superagent.get('https://thecatapi.com/api/images/get')
-        .then(res => extractUrlFromGetResult(res))
+        .then(res => extractImageFromGetResult(res))
         .catch(console.error);
 
     if (catUrl) {
@@ -18,9 +18,9 @@ module.exports.run = async(client, message, args) => {
 
 module.exports.aliases = ['cat', 'cate', '🐱'];
 
-function extractUrlFromGetResult(result) {
+function extractImageFromGetResult(result) {
     let stringRes = JSON.stringify(result);
     let obj = JSON.parse(stringRes);
 
-    return obj.req.url;
+    return obj.header.original_image;
 }
