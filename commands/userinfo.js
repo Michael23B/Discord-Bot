@@ -8,6 +8,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['userinfo', 'user', 'uinfo'];
+module.exports.permissions = ['SEND_MESSAGES', 'EMBED_LINKS'];
 
 async function createUserInfoEmbed(member) {
     let roles = await helpers.getRolesString(member.roles);

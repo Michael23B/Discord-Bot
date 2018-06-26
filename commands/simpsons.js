@@ -44,10 +44,14 @@ module.exports.run = async(client, message, args) => {
     //If there are multiple frames, we wait for users to vote
     if (embed) {
         voteMessage = await message.channel.send(embed);
-        winningIndex = await awaitWinningFrameTest(voteMessage, 10000, sampleFrames.length).catch(console.error);
-        return;
+        winningIndex = await awaitWinningFrame(voteMessage, 10000, sampleFrames.length).catch(console.error);
     }
     else winningIndex = 0;
+
+    if (!sampleFrames[winningIndex]) {
+        console.log('uh oh');
+        return;
+    }
 
     let imgUrl = buildImageUrl(sampleFrames[winningIndex].Frame.Episode, sampleFrames[winningIndex].Frame.Timestamp);
 
@@ -98,6 +102,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['simpsons', 'simpson'];
+module.exports.permissions = ['SEND_MESSAGES', 'ATTACH_FILES', 'EMBED_LINKS', 'ADD_REACTIONS'];
 
 function getSampledFramesEmbed(info, query) {
     if (info.length === 1) return null;
@@ -131,7 +136,9 @@ async function awaitWinningFrame(voteMessage, timeToWait, count) {
     }
 
     return await voteMessage.awaitReactions(numberFilter, { time: timeToWait })
-        .then(collected => selectWinningEmoji(collected))
+        .then(collected => {
+            selectWinningEmoji(collected)
+        })
         .catch(console.error);
 }
 

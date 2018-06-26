@@ -3,6 +3,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['cleanup', 'clean', 'remove', 'delete'];
+module.exports.permissions = ['SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'MANAGE_MESSAGES'];
 
 async function cleanUp(client, message, args) {
     let deleteCount = 0;

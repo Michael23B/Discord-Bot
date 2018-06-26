@@ -5,6 +5,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['call', 'createcall'];
+module.exports.permissions = ['SEND_MESSAGES', 'CONNECT', 'SPEAK', 'MANAGE_CHANNELS'];
 
 async function createVoiceChannel(message, args) {
     if (!args[0]) {

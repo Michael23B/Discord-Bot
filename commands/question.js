@@ -102,6 +102,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['question', 'q'];
+module.exports.permissions = ['SEND_MESSAGES', 'ATTACH_FILES', 'EMBED_LINKS'];
 
 async function createQuestionEmbed(message, question, includeAnswer) {
     let member = await message.guild.members.find(x => x.user === message.author);

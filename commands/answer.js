@@ -15,6 +15,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['answer', 'a'];
+module.exports.permissions = ['SEND_MESSAGES', 'ATTACH_FILES', 'EMBED_LINKS'];
 
 //Why not just check the message content at the start of the question command?
 //I think the commands have a clearer purpose this way.

@@ -3,3 +3,4 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['hello', 'test', 'dontusethiscommand'];
+module.exports.permissions = ['SEND_MESSAGES', 'ADD_REACTIONS'];

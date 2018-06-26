@@ -31,6 +31,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['rainbow'];
+module.exports.permissions = ['SEND_MESSAGES'];
 /*
 function rainbow(target) {
     let currHue = 0;

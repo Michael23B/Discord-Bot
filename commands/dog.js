@@ -15,3 +15,4 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['dog', 'doggo', '🐶'];
+module.exports.permissions = ['SEND_MESSAGES', 'ATTACH_FILES', 'EMBED_LINKS'];

@@ -7,6 +7,7 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['serverinfo', 'server', 'sinfo'];
+module.exports.permissions = ['SEND_MESSAGES', 'EMBED_LINKS'];
 
 async function createServerInfoEmbed(message) {
     let roles = await helpers.getRolesString(message.guild.roles);

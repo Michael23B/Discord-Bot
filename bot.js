@@ -6,6 +6,7 @@ const fs = require('fs');
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 client.botRoleName = '^-^';
+client.botRoleNameDisabled = 'bot use disabled';
 client.prefix = settings.prefix;
 
 client.on('ready', async () => {
@@ -25,11 +26,33 @@ client.on('message', async message => {
 
     let cmd = client.commands.get(command.slice(client.prefix.length));
 
-    if (message.member.hasPermission(cmd.permissions)) console.log(`has permissions ${cmd.permissions}`);
-    else console.log('does not have permissions');
+    if (!cmd) {
+        await message.reply(`${command} is not a recognized command!`).then(msg => msg.delete(5000)).catch(console.error);
+        return;
+    }
 
-    if (cmd) cmd.run(client, message, args);
-    else message.reply(`${command} is not a recognized command!`);
+    if (!message.member.hasPermission(cmd.permissions, false, true, true)) {
+        //Get the required commands in string form
+        let reqCommands = "[";
+        cmd.permissions.forEach(p => {
+            reqCommands += p + ',';
+        });
+        reqCommands = reqCommands.slice(0, reqCommands.length - 1);
+        reqCommands += ']';
+
+        await message.reply(`your power level is too low to use that command.` +
+            ` You require all of the following commands: ${reqCommands}.`)
+            .then(msg => msg.delete(5000)).catch(console.error);
+        return;
+    }
+
+    if (message.member.roles.find(x => x.name === client.botRoleNameDisabled)) {
+        await message.reply(`you're not allowed to use bot commands.`)
+            .then(msg => msg.delete(5000)).catch(console.error);
+        return;
+    }
+
+    cmd.run(client, message, args);
 });
 
 //Read commands from files
@@ -58,6 +81,5 @@ fs.readdir('./commands/', (err, files) => {
 
 client.login(settings.token).catch(console.error);
 
-//TODO: check for permissions before allowing some commands
 //TODO: add reasons to commands to log who called the command
 //TODO: check own permissions before trying commands
