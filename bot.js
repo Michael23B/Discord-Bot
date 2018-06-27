@@ -32,13 +32,7 @@ client.on('message', async message => {
     }
 
     if (!message.member.hasPermission(cmd.permissions, false, true, true)) {
-        //Get the required commands in string form
-        let reqCommands = "[";
-        cmd.permissions.forEach(p => {
-            reqCommands += p + ',';
-        });
-        reqCommands = reqCommands.slice(0, reqCommands.length - 1);
-        reqCommands += ']';
+        let reqCommands = '[' + cmd.permissions.join(', ') + ']';
 
         await message.reply(`your power level is too low to use that command.` +
             ` You require all of the following commands: ${reqCommands}.`)

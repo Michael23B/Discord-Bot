@@ -51,7 +51,7 @@ async function createVoiceChannel(message, args) {
     let timeToDelete = args[1] && !isNaN(args[1]) ? helpers.clamp(args[1], 0.1, 1441) : 60;
 
     if (timeToDelete > 1440) {
-        message.reply(` channel created. Channels that last longer than a day won't be deleted.`);
+        message.reply(`channel created. Channels that last longer than a day won't be deleted.`);
         return;
     }
 

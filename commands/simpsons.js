@@ -45,6 +45,7 @@ module.exports.run = async(client, message, args) => {
     if (embed) {
         voteMessage = await message.channel.send(embed);
         winningIndex = await awaitWinningFrame(voteMessage, 10000, sampleFrames.length).catch(console.error);
+        if (winningIndex >= sampleFrames.length) winningIndex = 0;
     }
     else winningIndex = 0;
 
@@ -113,13 +114,21 @@ function getSampledFramesEmbed(info, query) {
         .setFooter('React to select image.');
 
     for (let i = 0; i < info.length; ++i) {
+        let subIndex = nearestSubtitleIndex(info[i].Subtitles, info[i].Frame.Timestamp);
         embed.addField(`${i+1}. Season ${info[i].Episode.Season} | Episode ${info[i].Episode.EpisodeNumber}`,
-            `Title: \`${info[i].Episode.Title}\`\nSubtitles: \`${info[i].Subtitles[0].Content}\``)
+            `Title: \`${info[i].Episode.Title}\`\nSubtitles: \`${info[i].Subtitles[subIndex].Content}\``)
     }
 
     return embed;
 }
-//TODO: find the Subtitles[].Content that matches the timestamp most closely instead of using [0]
+
+//Finds the subtitle closest to the current frame
+function nearestSubtitleIndex(subtitles, timestamp) {
+    for (let i = 0; i < subtitles.length; ++i) {
+        if (subtitles[i].StartTimestamp <= timestamp && subtitles[i].EndTimestamp >= timestamp) return i;
+    }
+    return 0;
+}
 
 function getImageEmbed(imgUrl, query, timeStamp) {
     return new Discord.RichEmbed()
@@ -136,14 +145,9 @@ async function awaitWinningFrame(voteMessage, timeToWait, count) {
     }
 
     return await voteMessage.awaitReactions(numberFilter, { time: timeToWait })
-        .then(collected => {
-            selectWinningEmoji(collected)
-        })
+        .then(collected => selectWinningEmoji(collected))
         .catch(console.error);
 }
-
-//FIXME: if someone added a 5 emoji when there was only 4 results then it would error since it would pass the filter
-//(&& result < count)
 
 /*
 TODO: could change time based vote to simply change when the user who requested the image reacts using a collector
