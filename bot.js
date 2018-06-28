@@ -8,6 +8,7 @@ client.commands = new Discord.Collection();
 client.botRoleName = '^-^';
 client.botRoleNameDisabled = 'bot use disabled';
 client.prefix = settings.prefix;
+client.msgLife = settings.messageLifeTime;
 
 client.on('ready', async () => {
     console.log(client.user.username + ' ready for deployment sir.\n');
@@ -27,7 +28,7 @@ client.on('message', async message => {
     let cmd = client.commands.get(command.slice(client.prefix.length));
 
     if (!cmd) {
-        await message.reply(`${command} is not a recognized command!`).then(msg => msg.delete(5000)).catch(console.error);
+        await message.reply(`${command} is not a recognized command!`).then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
 
@@ -36,13 +37,13 @@ client.on('message', async message => {
 
         await message.reply(`your power level is too low to use that command.` +
             ` You require all of the following commands: ${reqCommands}.`)
-            .then(msg => msg.delete(5000)).catch(console.error);
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
 
     if (message.member.roles.find(x => x.name === client.botRoleNameDisabled)) {
         await message.reply(`you're not allowed to use bot commands.`)
-            .then(msg => msg.delete(5000)).catch(console.error);
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
 

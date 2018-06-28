@@ -3,11 +3,15 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['cleanup', 'clean', 'remove', 'delete'];
-module.exports.permissions = ['SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'MANAGE_MESSAGES'];
+module.exports.permissions = ['SEND_MESSAGES', 'READ_MESSAGE_HISTORY'];
 
 async function cleanUp(client, message, args) {
     let deleteCount = 0;
     if (args[0] === 'roles') {
+        if (!message.member.hasPermission('MANAGE_ROLES', false, true, true)) {
+            message.reply(`you can't cleanup roles without the MANAGE_ROLES permission.`)
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        }
         let roleToDelete = Array.prototype.join.call(args.slice(1), " ") || client.botRoleName;
         message.guild.roles.forEach(entry => {
             if (entry.name === roleToDelete) {
@@ -20,6 +24,10 @@ async function cleanUp(client, message, args) {
         message.reply(`found ${deleteCount} roles named ${roleToDelete}. Getting rid of them now.`);
     }
     else if (args[0] === 'messages') {
+        if (!message.member.hasPermission('MANAGE_MESSAGES', false, true, true)) {
+            message.reply(`you can't cleanup messages without the MANAGE_MESSAGES permission.`)
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        }
         deleteCount = (args[1] && !isNaN(args[1])) ? args[1] : 10;
         let messages = await message.channel.fetchMessages({limit: deleteCount}).catch(console.error);
         let user = message.mentions ? message.mentions.members.first() : null;
@@ -30,10 +38,14 @@ async function cleanUp(client, message, args) {
         message.reply(`I searched through the last ${deleteCount}` +
             ` messages and deleted ${messages.size} messages by ${user || 'everyone'}`)
             .then(msg => {
-                msg.delete(5000);
+                msg.delete(client.msgLife);
             });
     }
     else if (args[0] === 'calls') {
+        if (!message.member.hasPermission('MANAGE_CHANNELS', false, true, true)) {
+            message.reply(`you can't cleanup calls without the MANAGE_CHANNELS  permission.`)
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        }
         if (!args[1]) {
             message.reply('please enter a channel name.');
             return;

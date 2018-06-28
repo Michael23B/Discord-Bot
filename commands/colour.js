@@ -8,7 +8,7 @@ module.exports.run = async(client, message, args) => {
         if (target.hasPermission('ADMINISTRATOR', false, true, true)
             || target.highestRole.position >= message.member.highestRole.position) {
             message.reply(`${target.user.username} has a power level equal to or greater than yours.`)
-                .then(msg => msg.delete(5000)).catch(console.error);
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
             return;
         }
     }

@@ -7,7 +7,7 @@ module.exports.run = async(client, message, args) => {
 
     if (!target) {
         message.reply(`you must mention a user (\`@username\`) to kick them.`)
-            .then(msg => msg.delete(5000)).catch(console.error);
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
 
     let isOwner = message.guild.owner === message.member;
@@ -18,7 +18,7 @@ module.exports.run = async(client, message, args) => {
             || target.highestRole.position >= message.member.highestRole.position)
             && !isOwner) {
             message.reply(`${target.user.username} has a power level equal to or greater than yours.`)
-                .then(msg => msg.delete(5000)).catch(console.error);
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
             return;
         }
     }
@@ -35,10 +35,10 @@ module.exports.run = async(client, message, args) => {
 
     await target.kick(`${message.author.username} voted to kick.`).then(() => {
         message.reply(`${target.user.username} has been kicked.`)
-            .then(msg => msg.delete(5000)).catch(console.error);
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }).catch(() => {
         message.reply(`couldn't kick ${target.user.username}. Their power level is even greater than my own.`)
-            .then(msg => msg.delete(5000)).catch(console.error);
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
     });
 };
 
