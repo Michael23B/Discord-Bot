@@ -16,12 +16,14 @@ async function cleanUp(client, message, args) {
         message.guild.roles.forEach(entry => {
             if (entry.name === roleToDelete) {
                 entry.delete().catch(() => {
-                    message.reply(`couldn't remove the ${entry.name} role for some reason >:(`);
+                    message.reply(`couldn't remove the ${entry.name} role for some reason >:(`)
+                        .then(msg => msg.delete(client.msgLife)).catch(console.error);
                 });
                 deleteCount++;
             }
         });
-        message.reply(`found ${deleteCount} roles named ${roleToDelete}. Getting rid of them now.`);
+        message.reply(`found ${deleteCount} roles named ${roleToDelete}. Getting rid of them now.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
     else if (args[0] === 'messages') {
         if (!message.member.hasPermission('MANAGE_MESSAGES', false, true, true)) {
@@ -47,7 +49,8 @@ async function cleanUp(client, message, args) {
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
         }
         if (!args[1]) {
-            message.reply('please enter a channel name.');
+            message.reply('please enter a channel name.')
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
             return;
         }
         let channelName = Array.prototype.join.call(args.slice(1), " ");
@@ -55,9 +58,11 @@ async function cleanUp(client, message, args) {
         channels.forEach(entry => {
             entry.delete();
         });
-        message.reply(`removed ${channels ? channels.size : 0} channels named ${channelName}`);
+        message.reply(`removed ${channels ? channels.size : 0} channels named ${channelName}`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);;
     }
     else {
-        message.reply('I don\'t know how to clean that up');
+        message.reply('I don\'t know how to clean that up')
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);;
     }
 }

@@ -22,7 +22,8 @@ module.exports.run = async(client, message, args) => {
             break;
         case 'ask':
             if (askingQuestion) {
-                message.reply(`please wait for ${currPlayer} to answer first.`);
+                message.reply(`please wait for ${currPlayer} to answer first.`)
+                    .then(msg => msg.delete(client.msgLife)).catch(console.error);
                 return;
             }
 
@@ -39,7 +40,8 @@ module.exports.run = async(client, message, args) => {
         case 'answer':
         case 'a':
             if (!askingQuestion) {
-                message.reply('request a question first!');
+                message.reply('request a question first!')
+                    .then(msg => msg.delete(client.msgLife)).catch(console.error);
             }
             else if ((Array.prototype.join.call(args.slice(1), " ")).toLowerCase() === currAnswer.toLowerCase()) {
                 message.reply('^-^ yaaay~ you did it senpai! :)))');
@@ -49,7 +51,8 @@ module.exports.run = async(client, message, args) => {
             break;
         case 'add':
             if (!message.attachments.first() || !args[1] || !args[2]) {
-                message.reply('make sure you\'ve attached an image and have a question and answer.');
+                message.reply('make sure you\'ve attached an image and have a question and answer.')
+                    .then(msg => msg.delete(client.msgLife)).catch(console.error);
                 break;
             }
 
@@ -59,7 +62,8 @@ module.exports.run = async(client, message, args) => {
             let answer = Array.prototype.join.call(args.slice(questionEndIndex + 1), " ");
 
             if (!question || !answer) {
-                message.reply('no question/answer found! Make sure your question ends with a \'?\' and the answer follows.');
+                message.reply('no question/answer found! Make sure your question ends with a \'?\' and the answer follows.')
+                    .then(msg => msg.delete(client.msgLife)).catch(console.error);
                 return;
             }
 
@@ -80,12 +84,15 @@ module.exports.run = async(client, message, args) => {
         case 'delete':
         case 'remove':
             if (questions.length === 0) {
-                message.reply('no questions to delete.');
+                message.reply('no questions to delete.')
+                    .then(msg => msg.delete(client.msgLife)).catch(console.error);
             }
             else if (isNaN(args[1])) message.reply(`supply a question index to remove it.` +
-            ` You can find the indexes using ${client.prefix}question get.`);
+            ` You can find the indexes using ${client.prefix}question get.`)
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
             else if (args[1] > questions.length || args[1] < 1) {
-                message.reply(`supply an index between 1 and ${questions.length}.`);
+                message.reply(`supply an index between 1 and ${questions.length}.`)
+                    .then(msg => msg.delete(client.msgLife)).catch(console.error);
             }
             else {
                 let removedQuestion = questions.splice((args[1] - 1), 1);
@@ -97,7 +104,8 @@ module.exports.run = async(client, message, args) => {
             }
             break;
         default:
-            message.reply(`sorry I didn\'t understand ${message.content}. You can try \`TODO: add things you can do here\``);
+            message.reply(`sorry I didn\'t understand ${message.content}. You can try \`TODO: add things you can do here\``)
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
 };
 

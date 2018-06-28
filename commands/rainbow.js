@@ -7,7 +7,8 @@ let intervals = [];
 module.exports.run = async(client, message, args) => {
     //Seems to start having problems after a while of running if set to any reasonably fast speed.
     //Might come back later and see if anything can be done about it.
-    message.reply('that command is disabled :(');
+    message.reply('that command is disabled :(')
+        .then(msg => msg.delete(client.msgLife)).catch(console.error);;
 
     /*
     if (args[0] === 'stop') {

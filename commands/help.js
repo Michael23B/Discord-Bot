@@ -5,7 +5,8 @@ module.exports.run = async(client, message, args) => {
         let helpEmbed = await createDetailedHelpEmbed(client, message, args).catch(console.error);
         message.author.createDM().then(dm => dm.send(helpEmbed))
             .catch(console.error)
-            .then(message.reply('I\'ve sent you some information'));
+            .then(message.reply('I\'ve sent you some information')
+                .then(msg => msg.delete(client.msgLife)).catch(console.error));
     }
     else {
         let helpEmbed = await createHelpEmbed(client, message, args).catch(console.error);

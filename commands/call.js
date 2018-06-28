@@ -9,12 +9,14 @@ module.exports.permissions = ['SEND_MESSAGES', 'CONNECT', 'SPEAK', 'MANAGE_CHANN
 
 async function createVoiceChannel(message, args) {
     if (!args[0]) {
-        message.reply('please provide a name for the channel!');
+        message.reply('please provide a name for the channel.')
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
     //TODO: check this earlier before any guild-related commands are chosen
     if (!message.guild.available) {
-        message.reply('I can\'t do that');
+        message.reply('I can\'t do that')
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
 
@@ -51,10 +53,12 @@ async function createVoiceChannel(message, args) {
     let timeToDelete = args[1] && !isNaN(args[1]) ? helpers.clamp(args[1], 0.1, 1441) : 60;
 
     if (timeToDelete > 1440) {
-        message.reply(`channel created. Channels that last longer than a day won't be deleted.`);
+        message.reply(`channel created. Channels that last longer than a day won't be deleted.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
 
     setTimeout(() => helpers.safeDeleteChannel(message.guild, channel.id), (timeToDelete * 60000));
-    message.reply(`I'll delete that channel in ${timeToDelete} minutes unless you're still using it by then.`);
+    message.reply(`I'll delete that channel in ${timeToDelete} minutes unless you're still using it by then.`)
+        .then(msg => msg.delete(client.msgLife)).catch(console.error);
 }

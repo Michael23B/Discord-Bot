@@ -78,3 +78,4 @@ client.login(settings.token).catch(console.error);
 
 //TODO: add reasons to commands to log who called the command
 //TODO: check own permissions before trying commands
+//TODO: add cooldown to commands so they can't be spammed

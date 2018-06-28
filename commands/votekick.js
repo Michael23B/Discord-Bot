@@ -8,11 +8,18 @@ module.exports.run = async(client, message, args) => {
     if (!target) {
         message.reply(`you must mention a user (\`@username\`) to kick them.`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+
+    if (!target.kickable) {
+        message.reply(`I am not able to kick ${target.user.username}. Their power level is even greater than my own.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
     }
 
     let isOwner = message.guild.owner === message.member;
 
-    //Compare permissions for setting another members colour
+    //Compare permissions to target
     if (target !== message.member) {
         if ((target.hasPermission('ADMINISTRATOR', false, true, true)
             || target.highestRole.position >= message.member.highestRole.position)
@@ -27,15 +34,15 @@ module.exports.run = async(client, message, args) => {
     let voteMessage = await message.channel.send(embed);
 
     let voteResult = await awaitVotes(voteMessage, 15000);
-
-    if (voteResult < 3) {
-        message.channel.send(`${target.user.username} did not receive enough votes to be kicked.`).catch(console.error);
+    let votesNeeded = (message.guild.memberCount / 2) + 1;
+    if (voteResult < votesNeeded) {
+        message.channel.send(`${target.user.username} did not receive enough votes to be kicked. (${voteResult}/${votesNeeded})`)
+            .catch(console.error);
         return;
     }
 
     await target.kick(`${message.author.username} voted to kick.`).then(() => {
-        message.reply(`${target.user.username} has been kicked.`)
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        message.channel.send(`${target.user.username} has been kicked.`).catch(console.error);
     }).catch(() => {
         message.reply(`couldn't kick ${target.user.username}. Their power level is even greater than my own.`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
@@ -66,8 +73,16 @@ function countVotes(collected) {
     let votes = 0;
 
     collected.forEach(v => {
-        if (v._emoji.name === '❌') votes-= v.count;
-        if (v._emoji.name === '✅') votes+= v.count;
+        //We increment/decrement votes once before counting because the bot reactions only are counted if at least one
+        //other person reacted to them. eg. 1 no vote (bot only), 2 yes vote (bot + 1 person) = no vote doesn't get collected.
+        if (v._emoji.name === '❌') {
+            votes++;
+            votes -= v.count;
+        }
+        if (v._emoji.name === '✅') {
+            votes--;
+            votes += v.count;
+        }
     });
 
     return votes;
