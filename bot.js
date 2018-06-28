@@ -4,11 +4,7 @@ const fs = require('fs');
 
 //Setup bot
 const client = new Discord.Client();
-client.commands = new Discord.Collection();
-client.botRoleName = '^-^';
-client.botRoleNameDisabled = 'bot use disabled';
-client.prefix = settings.prefix;
-client.msgLife = settings.messageLifeTime;
+setupBotProperties();
 
 client.on('ready', async () => {
     console.log(client.user.username + ' ready for deployment sir.\n');
@@ -76,6 +72,36 @@ fs.readdir('./commands/', (err, files) => {
 
 client.login(settings.token).catch(console.error);
 
+function setupBotProperties() {
+    client.commands = new Discord.Collection();
+    client.botRoleName = '^-^';
+    client.botRoleNameDisabled = 'bot use disabled';
+    client.prefix = settings.prefix;
+    client.msgLife = settings.messageLifeTime;
+
+    //Command cooldowns
+    client.cooldowns = {};
+    client.startCooldown = function(cmdName, userId, endDate) {
+        if (!client.cooldowns.hasOwnProperty(cmdName)) client.cooldowns[cmdName] = [];
+        client.cooldowns[cmdName].push({userId: userId, endDate: endDate})
+    };
+    client.checkCooldown = function(cmdName, userId) {
+        if (!client.cooldowns.hasOwnProperty(cmdName) || client.cooldowns[cmdName].count === 0) return 0;
+
+        let index = client.cooldowns[cmdName].findIndex(x => x.userId === userId);
+        if (index === -1) return 0;
+        else {
+            let currDate = new Date().getTime();
+            let endDate = client.cooldowns[cmdName][index].endDate;
+            if (currDate >= endDate) {
+                client.cooldowns[cmdName].splice(index, 1);
+                return 0;
+            }
+            else return endDate - currDate;
+        }
+    };
+}
+
 //TODO: add reasons to commands to log who called the command
 //TODO: check own permissions before trying commands
-//TODO: add cooldown to commands so they can't be spammed
+

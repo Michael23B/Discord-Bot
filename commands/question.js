@@ -1,9 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs');
-const util = require('util');
-
-//Promise wrapper for fs.readFile so we can use await, .then(), etc.
-const readFile = util.promisify(fs.readFile);
+const helpers = require('../helpers');
 
 let askingQuestion = false;
 let currPlayer = "";
@@ -123,7 +120,7 @@ async function createQuestionEmbed(message, question, includeAnswer) {
 }
 
 async function getQuestionsObject() {
-    return await readFile('./data/questions.json').then(data => JSON.parse(data)).catch(console.error);
+    return await helpers.readFile('./data/questions.json').then(data => JSON.parse(data)).catch(console.error);
 }
 
 //TODO: break switch case into smaller functions, allow editing of questions,

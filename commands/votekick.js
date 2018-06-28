@@ -1,8 +1,16 @@
 const Discord = require('discord.js');
 
 const voteFilter = (reaction) => reaction.emoji.name === '❌' || reaction.emoji.name === '✅';
+const cooldown = 60000;
 
 module.exports.run = async(client, message, args) => {
+    let cd = client.checkCooldown(this.aliases[0], message.author.id);
+    if (cd > 0) {
+        message.reply(`wait ${cd / 1000} seconds before using this command again.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+
     let target = message.mentions.members.first();
 
     if (!target) {
@@ -29,6 +37,8 @@ module.exports.run = async(client, message, args) => {
             return;
         }
     }
+
+    client.startCooldown(this.aliases[0], message.author.id, new Date().getTime() + cooldown);
 
     let embed = getVoteEmbed(target, message.member);
     let voteMessage = await message.channel.send(embed);

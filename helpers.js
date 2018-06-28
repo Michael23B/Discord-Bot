@@ -1,3 +1,6 @@
+const fs = require('fs');
+const util = require('util');
+
 //
 //Discord related functions
 //
@@ -9,7 +12,6 @@ module.exports.getRolesString = async function(rolesCollection) {
     });
     return roles = roles.slice(0, -2); //Remove trailing comma and space
 };
-
 
 module.exports.getNewRole = async function(message, name) {
     return await message.guild.createRole({
@@ -24,6 +26,9 @@ module.exports.safeDeleteChannel = async function(guild, callId) {
     if (!call || call.members.first()) return;
     call.delete().catch(console.error);
 };
+
+//Promise wrapper for fs.readFile so we can use await, .then(), etc.
+module.exports.readFile = util.promisify(fs.readFile);
 
 //
 //Standard functions
