@@ -1,6 +1,15 @@
 const helpers = require('../helpers.js');
 
+const cooldown = 180000;
+
 module.exports.run = async(client, message, args) => {
+    let cd = client.checkCooldown(this.aliases[0], message.author.id);
+    if (cd > 0) {
+        message.reply(`wait ${cd / 1000} seconds before using this command again.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+
     await createVoiceChannel(client, message, args);
 };
 
@@ -13,12 +22,8 @@ async function createVoiceChannel(client, message, args) {
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
-    //TODO: check this earlier before any guild-related commands are chosen
-    if (!message.guild.available) {
-        message.reply('I can\'t do that')
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
-        return;
-    }
+
+    client.startCooldown(module.exports.aliases[0], message.author.id, new Date().getTime() + cooldown);
 
     //Disable all permissions for users, enable them for author
     //Stored in a bitfield so we negate 0 for all 1s

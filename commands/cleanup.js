@@ -1,4 +1,13 @@
+const cooldown = 15000;
+
 module.exports.run = async(client, message, args) => {
+    let cd = client.checkCooldown(this.aliases[0], message.author.id);
+    if (cd > 0) {
+        message.reply(`wait ${cd / 1000} seconds before using this command again.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+
     cleanUp(client, message, args).catch(console.error);
 };
 
@@ -7,6 +16,9 @@ module.exports.permissions = ['SEND_MESSAGES', 'READ_MESSAGE_HISTORY'];
 
 async function cleanUp(client, message, args) {
     let deleteCount = 0;
+
+    client.startCooldown(module.exports.aliases[0], message.author.id, new Date().getTime() + cooldown);
+
     if (args[0] === 'roles') {
         if (!message.member.hasPermission('MANAGE_ROLES', false, true, true)) {
             message.reply(`you can't cleanup roles without the MANAGE_ROLES permission.`)
@@ -69,7 +81,7 @@ async function cleanUp(client, message, args) {
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
     else {
-        message.reply('I don\'t know how to clean that up')
+        message.reply('I don\'t know how to clean that up.')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
 }

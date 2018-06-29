@@ -101,11 +101,10 @@ async function createDetailedHelpEmbed(client, message, args) {
             ' is supplied, a random frame is chosen and you cannot change frames.\n' +
             '`>cat, >cate, >🐱, >dog, >doggo, >🐶, >simpsons`')
         .addField('Moderation:', '```>votekick [@username]```' +
-            'Begins a vote to kick the mentioned user. The person who initiates the vote must not be lower or equal' +
-            ' in privileges than the user mentioned. Requires majority of the servers user count votes to succeed.\n' +
+            'Begins a vote to kick the mentioned user. Requires a majority vote to succeed.\n' +
             '```>disable [@username]```' +
             'Prevents the user from using bot commands. Works as long as the user has the \'bot use disabled\'' +
-            ' role. If they have the \'MANAGE_ROLES\' privilege, this command won\'t stop them.\n' +
+            ' role. If they have the MANAGE_ROLES privilege, this command won\'t stop them.\n' +
             '`>votekick, >kick, >disable`')
         .setFooter('Will add examples later probably.');
 }

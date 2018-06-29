@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 
 const voteFilter = (reaction) => reaction.emoji.name === '❌' || reaction.emoji.name === '✅';
-const cooldown = 180000;
+const cooldown = 600000;
 const votingTime = 60000;
 
 module.exports.run = async(client, message, args) => {
@@ -63,15 +63,15 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['votekick', 'kick'];
-module.exports.permissions = ['SEND_MESSAGES'];
+module.exports.permissions = ['SEND_MESSAGES', 'ADD_REACTIONS'];
 
 function getVoteEmbed(memberToKick, memberWhoInitiated, votesNeeded, endTime) {
     return new Discord.RichEmbed()
         .setTitle(`Voting to kick ${memberToKick.user.username}`)
         .addField('Votes needed: ', votesNeeded)
-        .addField('Votes will be collected at:', new Date(endTime).toString())
+        .addField('Votes will be counted at:', new Date(endTime).toString())
         .setImage(memberToKick.user.displayAvatarURL)
-        .setColor('RED')
+        .setColor('DARK_RED')
         .setFooter(`Vote initiated by ${memberWhoInitiated.user.username}`);
 }
 

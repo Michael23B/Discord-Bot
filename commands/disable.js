@@ -33,7 +33,7 @@ module.exports.run = async(client, message, args) => {
     let role = await helpers.getNewRole(message, client.botRoleNameDisabled);
     await target.addRole(role).catch(console.error);
 
-    message.reply(`I will not respond to commands from ${target.user.username} as long as they have the "${client.botRoleNameDisabled}" role.`)
+    message.reply(`I will not respond to commands from ${target.user.username}.`)
         .then(msg => msg.delete(client.msgLife)).catch(console.error);
 };
 
