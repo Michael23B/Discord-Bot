@@ -1,7 +1,8 @@
 const Discord = require('discord.js');
 
 const voteFilter = (reaction) => reaction.emoji.name === '❌' || reaction.emoji.name === '✅';
-const cooldown = 60000;
+const cooldown = 180000;
+const votingTime = 60000;
 
 module.exports.run = async(client, message, args) => {
     let cd = client.checkCooldown(this.aliases[0], message.author.id);
@@ -24,7 +25,8 @@ module.exports.run = async(client, message, args) => {
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
-
+    //Enable the code block to allow only those with higher privileges to vote-kick lower users
+    /*
     let isOwner = message.guild.owner === message.member;
 
     //Compare permissions to target
@@ -37,14 +39,15 @@ module.exports.run = async(client, message, args) => {
             return;
         }
     }
-
+    */
     client.startCooldown(this.aliases[0], message.author.id, new Date().getTime() + cooldown);
 
-    let embed = getVoteEmbed(target, message.member);
+    let votesNeeded = (message.guild.memberCount / 2) + 1;
+    let embed = getVoteEmbed(target, message.member, votesNeeded, new Date().getTime() + votingTime);
     let voteMessage = await message.channel.send(embed);
 
-    let voteResult = await awaitVotes(voteMessage, 15000);
-    let votesNeeded = (message.guild.memberCount / 2) + 1;
+    let voteResult = await awaitVotes(voteMessage, votingTime);
+
     if (voteResult < votesNeeded) {
         message.channel.send(`${target.user.username} did not receive enough votes to be kicked. (${voteResult}/${votesNeeded})`)
             .catch(console.error);
@@ -60,11 +63,13 @@ module.exports.run = async(client, message, args) => {
 };
 
 module.exports.aliases = ['votekick', 'kick'];
-module.exports.permissions = ['ADMINISTRATOR'];
+module.exports.permissions = ['SEND_MESSAGES'];
 
-function getVoteEmbed(memberToKick, memberWhoInitiated) {
+function getVoteEmbed(memberToKick, memberWhoInitiated, votesNeeded, endTime) {
     return new Discord.RichEmbed()
         .setTitle(`Voting to kick ${memberToKick.user.username}`)
+        .addField('Votes needed: ', votesNeeded)
+        .addField('Votes will be collected at:', new Date(endTime).toString())
         .setImage(memberToKick.user.displayAvatarURL)
         .setColor('RED')
         .setFooter(`Vote initiated by ${memberWhoInitiated.user.username}`);

@@ -1,13 +1,13 @@
 const helpers = require('../helpers.js');
 
 module.exports.run = async(client, message, args) => {
-    await createVoiceChannel(message, args);
+    await createVoiceChannel(client, message, args);
 };
 
 module.exports.aliases = ['call', 'createcall'];
 module.exports.permissions = ['SEND_MESSAGES', 'CONNECT', 'SPEAK', 'MANAGE_CHANNELS'];
 
-async function createVoiceChannel(message, args) {
+async function createVoiceChannel(client, message, args) {
     if (!args[0]) {
         message.reply('please provide a name for the channel.')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
@@ -50,10 +50,10 @@ async function createVoiceChannel(message, args) {
         }).catch(console.error);
     }
 
-    let timeToDelete = args[1] && !isNaN(args[1]) ? helpers.clamp(args[1], 0.1, 1441) : 60;
+    let timeToDelete = args[1] && !isNaN(args[1]) ? helpers.clamp(args[1], 0, 10000) : 9999;
 
-    if (timeToDelete > 1440) {
-        message.reply(`channel created. Channels that last longer than a day won't be deleted.`)
+    if (timeToDelete >= 9999 || timeToDelete === 0) {
+        message.reply(`channel created.`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }

@@ -11,8 +11,15 @@ async function cleanUp(client, message, args) {
         if (!message.member.hasPermission('MANAGE_ROLES', false, true, true)) {
             message.reply(`you can't cleanup roles without the MANAGE_ROLES permission.`)
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            return;
         }
-        let roleToDelete = Array.prototype.join.call(args.slice(1), " ") || client.botRoleName;
+        let roleToDelete = Array.prototype.join.call(args.slice(1), " ");
+        if (!roleToDelete) {
+            message.reply(`you need to provide the name of the role. \`>cleanup roles [name of role]\``)
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            return;
+        }
+
         message.guild.roles.forEach(entry => {
             if (entry.name === roleToDelete) {
                 entry.delete().catch(() => {
@@ -29,6 +36,7 @@ async function cleanUp(client, message, args) {
         if (!message.member.hasPermission('MANAGE_MESSAGES', false, true, true)) {
             message.reply(`you can't cleanup messages without the MANAGE_MESSAGES permission.`)
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            return;
         }
         deleteCount = (args[1] && !isNaN(args[1])) ? args[1] : 10;
         let messages = await message.channel.fetchMessages({limit: deleteCount}).catch(console.error);
@@ -38,18 +46,17 @@ async function cleanUp(client, message, args) {
 
         await message.channel.bulkDelete(messages);
         message.reply(`I searched through the last ${deleteCount}` +
-            ` messages and deleted ${messages.size} messages by ${user || 'everyone'}`)
-            .then(msg => {
-                msg.delete(client.msgLife);
-            });
+            ` messages and deleted ${messages.size} messages by ${user || 'everyone'}.`)
+            .then(msg => msg.delete(client.msgLife));
     }
     else if (args[0] === 'calls') {
         if (!message.member.hasPermission('MANAGE_CHANNELS', false, true, true)) {
             message.reply(`you can't cleanup calls without the MANAGE_CHANNELS  permission.`)
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            return;
         }
         if (!args[1]) {
-            message.reply('please enter a channel name.')
+            message.reply(`you need to provide the name of the call. \`>cleanup calls [name of call]\``)
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
             return;
         }
@@ -59,10 +66,10 @@ async function cleanUp(client, message, args) {
             entry.delete();
         });
         message.reply(`removed ${channels ? channels.size : 0} channels named ${channelName}`)
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);;
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
     else {
         message.reply('I don\'t know how to clean that up')
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);;
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
 }

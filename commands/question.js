@@ -85,7 +85,7 @@ module.exports.run = async(client, message, args) => {
                     .then(msg => msg.delete(client.msgLife)).catch(console.error);
             }
             else if (isNaN(args[1])) message.reply(`supply a question index to remove it.` +
-            ` You can find the indexes using ${client.prefix}question get.`)
+            ` You can find the indexes using \`${client.prefix}question get.\``)
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
             else if (args[1] > questions.length || args[1] < 1) {
                 message.reply(`supply an index between 1 and ${questions.length}.`)
@@ -101,7 +101,7 @@ module.exports.run = async(client, message, args) => {
             }
             break;
         default:
-            message.reply(`sorry I didn\'t understand ${message.content}. You can try \`TODO: add things you can do here\``)
+            message.reply(`sorry I didn\'t understand ${message.content}. Questions must be formatted like this \`>q add [question]? [answer] (attach image)\``)
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
 };
