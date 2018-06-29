@@ -1,6 +1,7 @@
 const settings = require('./settings.json');
 const Discord = require('discord.js');
 const fs = require('fs');
+const helpers = require('./helpers.js');
 
 //Setup bot
 const client = new Discord.Client();
@@ -81,6 +82,7 @@ function setupBotProperties() {
 
     //Command cooldowns
     client.cooldowns = {};
+    //If there is no cooldown for that command, creates one then starts a cooldown for the requested player
     client.startCooldown = function(cmdName, userId, endDate) {
         if (!client.cooldowns.hasOwnProperty(cmdName)) client.cooldowns[cmdName] = [];
         client.cooldowns[cmdName].push({userId: userId, endDate: endDate})
@@ -100,8 +102,29 @@ function setupBotProperties() {
             else return endDate - currDate;
         }
     };
+
+    //Player statistics
+    client.playerStats = (() => {
+        let raw = fs.readFileSync('./data/inventories.json');
+        return JSON.parse(raw);
+    })();
+    client.savePlayerInventory = function() {
+        fs.writeFile("./data/inventories.json", JSON.stringify(client.playerStats, null, 4), () => console.error);
+    };
+    //Creates a new inventory for the player if one doesn't already exist, then returns the inventory of that player
+    client.getInventoryFor = function(userId) {
+        if (!client.playerStats.hasOwnProperty(userId)) {
+            client.playerStats[userId] = helpers.updateInventory({});
+        }
+        return client.playerStats[userId];
+    };
+    //Save player stats every so often in case the bot goes down
+    setInterval(client.savePlayerInventory, 10000);//TODO:temporary, make this once every 5 minutes or something when im done testing
+    //Updates the inventories of each player, in case the items array has changed (found in the helpers.js file)
+    Object.keys(client.playerStats).forEach(id => {
+        client.playerStats[id] = helpers.updateInventory(client.playerStats[id]);
+    });
 }
 
 //TODO: add reasons to commands to log who called the command
 //TODO: check own permissions before trying commands
-

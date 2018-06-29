@@ -27,8 +27,21 @@ module.exports.safeDeleteChannel = async function(guild, callId) {
     call.delete().catch(console.error);
 };
 
-//Promise wrapper for fs.readFile so we can use await, .then(), etc.
-module.exports.readFile = util.promisify(fs.readFile);
+//Updates our inventory so that we can update the items array and each players stats object will update accordingly
+module.exports.updateInventory = function(inventory) {
+    let items = ['💰', '🦈', '🥑'];
+    //Add any items from the items list that we don't have in our inventory
+    items.forEach(item => {
+        if (!inventory.hasOwnProperty(item)) {
+            inventory[item] = 0;
+        }
+    });
+    //Delete any item that is no longer in the item list
+    Object.keys(inventory).forEach(prop =>{
+        if (!items.includes(prop)) delete(inventory[prop]);
+    });
+    return inventory;
+};
 
 //
 //Standard functions
@@ -53,3 +66,6 @@ module.exports.getColour = function(args) {
 
     return colour;
 };
+
+//Promise wrapper for fs.readFile so we can use await, .then(), etc.
+module.exports.readFile = util.promisify(fs.readFile);
