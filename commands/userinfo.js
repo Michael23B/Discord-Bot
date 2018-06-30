@@ -14,8 +14,8 @@ async function createUserInfoEmbed(client, member) {
     let roles = await helpers.getRolesString(member.roles);
     let inventory = client.getInventoryFor(member.id);
     let inventoryString = Object.keys(inventory).map(key => {
-        return key.toString() + ' x ' + inventory[key].toString();
-    }).join(',');
+        return key.toString() + 'x' + inventory[key].toString();
+    }).join(', ');
 
     return new Discord.RichEmbed()
         .setTitle(`User info - ${member.user.username}`)

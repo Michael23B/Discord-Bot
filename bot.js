@@ -104,25 +104,34 @@ function setupBotProperties() {
     };
 
     //Player statistics
-    client.playerStats = (() => {
+    client.inventories = (() => {
         let raw = fs.readFileSync('./data/inventories.json');
         return JSON.parse(raw);
     })();
     client.savePlayerInventory = function() {
-        fs.writeFile("./data/inventories.json", JSON.stringify(client.playerStats, null, 4), () => console.error);
+        fs.writeFile("./data/inventories.json", JSON.stringify(client.inventories, null, 4), () => console.error);
     };
     //Creates a new inventory for the player if one doesn't already exist, then returns the inventory of that player
     client.getInventoryFor = function(userId) {
-        if (!client.playerStats.hasOwnProperty(userId)) {
-            client.playerStats[userId] = helpers.updateInventory({});
+        if (!client.inventories.hasOwnProperty(userId)) {
+            client.inventories[userId] = helpers.updateInventory({});
         }
-        return client.playerStats[userId];
+        return client.inventories[userId];
     };
+    client.setInventoryFor = function(userId, inventory) {
+        client.inventories[userId] = inventory;
+    };
+    client.changeItemAmountFor = function(userId, item, amount) {
+        let inventory = client.getInventoryFor(userId);
+        inventory[item] += amount;
+        client.setInventoryFor(userId, inventory);
+    };
+
     //Save player stats every so often in case the bot goes down
     setInterval(client.savePlayerInventory, 10000);//TODO:temporary, make this once every 5 minutes or something when im done testing
     //Updates the inventories of each player, in case the items array has changed (found in the helpers.js file)
-    Object.keys(client.playerStats).forEach(id => {
-        client.playerStats[id] = helpers.updateInventory(client.playerStats[id]);
+    Object.keys(client.inventories).forEach(id => {
+        client.inventories[id] = helpers.updateInventory(client.inventories[id]);
     });
 }
 
