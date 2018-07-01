@@ -55,6 +55,11 @@ module.exports.getRandomInt = function(min, max) {
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 };
 
+module.exports.getRandomBool = function(trueChance) {
+    if (!trueChance) trueChance = 0.5;
+    return Math.random() < trueChance;
+};
+
 module.exports.clamp = function(n, min, max) {
     return Math.min(Math.max(n, min), max);
 };

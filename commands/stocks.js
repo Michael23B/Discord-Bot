@@ -1,5 +1,8 @@
 const helpers = require('../helpers');
+const Discord = require('discord.js');
 
+const maxItemPerAdjust = 1000;
+let itemUserMap = {};
 const adjustFrequency = 600000; //Adjust market every ten minutes
 let lastAdjustTime;
 let nextAdjustTime;
@@ -14,31 +17,57 @@ module.exports.run = async(client, message, args) => {
     if (!currPrices) currPrices = basePrices;
 
     let currTime = new Date().getTime();
-    let adjustCount = 0;
-    if (!nextAdjustTime || nextAdjustTime <= currTime) {
-        adjustCount = lastAdjustTime ? (currTime - lastAdjustTime) / adjustFrequency : 1;
+    if (!nextAdjustTime || currTime >= nextAdjustTime) {
+        let adjustCount = lastAdjustTime ? (currTime - lastAdjustTime) / adjustFrequency : 1;
+
+        lastAdjustTime = currTime;
+        nextAdjustTime = currTime + adjustFrequency;
+
+        for (let i = 0; i < adjustCount; ++i) adjustMarketPrices();
     }
 
-    for (let i = 0; i < adjustCount; ++i) adjustMarketPrices();
+    let stockMarketStringArr = Object.keys(currPrices).map(key => {
+        let priceString = currPrices[key].toString();
+        let trendEmoji = currPrices[key] > prevPrices[key] ? '📈' : currPrices[key] === prevPrices[key] ? '➡' : '📉';
+        return trendEmoji + key.toString() + '$' + priceString + '\n';
+    });
 
-    let stockMarketString = Object.keys(currPrices).map(key => {
-        return key.toString() + '- $' + currPrices[key];
-    }).join(', ');
-
-    message.channel.send(stockMarketString).catch(console.error);
+    message.channel.send(createStockEmbed(stockMarketStringArr)).catch(console.error);
 };
 
 module.exports.aliases = ['stocks', 'stockmarket', 'market'];
 module.exports.permissions = ['SEND_MESSAGES'];
 
+function createStockEmbed(arr) {
+    let date = new Date();
+
+    let arrThird = arr.length / 3;
+    let col1 = arr.map((key, i) => { return i < arrThird ? key : ''}).join('');
+    let col2 = arr.map((key, i) => { return i < (arrThird*2) && i >= arrThird  ? key : ''}).join('');
+    let col3 = arr.map((key, i) => { return i >= (arrThird*2) ? key : ''}).join('');
+
+    return new Discord.RichEmbed()
+        .setTitle(`Market prices | ${date.toDateString()} - ${date.toLocaleTimeString()}`)
+        .addField(`♿ 💲`, col1, true)
+        .addField(`💸👨`, col2, true)
+        .addField(`🔫👨💰💎`, col3, true)
+        .setColor('BLUE')
+        .setFooter(`Next stock market shift at ${new Date(nextAdjustTime).toLocaleTimeString()}`);
+}
+
 function adjustMarketPrices() {
     Object.keys(currPrices).map(key => {
         prevPrices[key] = currPrices[key];
-        currPrices[key] = adjustPrice(key);
+        currPrices[key] = Math.max(adjustPrice(key), 1);
     });
 }
 
 function adjustPrice(key) {
-    let priceChangeRange = (currPrices[key] / 10) + (basePrices[key] / 10);
+    //Prices can shift up to 5% of their current price + 5% of their base price
+    let priceChangeRange = Math.floor((currPrices[key] * 0.05) + (basePrices[key] * 0.05));
+    //If a value is too small to get a change from percentages, give it a small chance to shift anyway
+    if (priceChangeRange === 0) {
+        if (helpers.getRandomBool(0.15 + (basePrices[key] / 100))) priceChangeRange = 1;
+    }
     return currPrices[key] + helpers.getRandomInt(priceChangeRange * -1, priceChangeRange + 1)
 }
