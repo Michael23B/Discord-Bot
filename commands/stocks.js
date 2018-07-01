@@ -1,30 +1,19 @@
 const helpers = require('../helpers');
 const Discord = require('discord.js');
 
-const maxItemPerAdjust = 1000;
-let itemUserMap = {};
 const adjustFrequency = 600000; //Adjust market every ten minutes
+const adjustVariationRange = 60000;
 let lastAdjustTime;
 let nextAdjustTime;
 
-const basePrices = {"🍏": 2, "🍅": 2, "🍇": 3, "🍓": 4, "🍒": 3, "🍆": 5, "🍯": 10, "🥑": 8, "🐟": 5, "🐠": 12,
-    "🐡": 15, "🐬": 40, "🐊": 55, "🦑": 72, "🦈": 98, "🐳": 150, "🕶": 20, "💍": 100, "👑": 250, "🛴": 40, "🚲": 46,
-    "🛵": 300, "🚗": 800, "🏎": 2200, "🚁": 4555, "✈": 12365, "🚀": 85220};
+const basePrices = {"🍎": 2, "🍅": 2, "🍇": 3, "🍓": 4, "🍒": 3, "🍆": 5, "🍯": 10, "🥑": 8, "🐟": 5, "🐠": 12,
+    "🐡": 15, "🐬": 40, "🐊": 55, "🦑": 72, "🦈": 98, "🐳": 150, "🕶": 34, "💍": 100, "👑": 250,
+    "🛵": 300, "🚗": 800, "🏎": 2200, "🏠": 5200, "🏡": 9400, "🚁": 4555, "✈": 12365, "🚀": 85220};
 let prevPrices = {};
 let currPrices;
 
 module.exports.run = async(client, message, args) => {
-    if (!currPrices) currPrices = basePrices;
-
-    let currTime = new Date().getTime();
-    if (!nextAdjustTime || currTime >= nextAdjustTime) {
-        let adjustCount = lastAdjustTime ? (currTime - lastAdjustTime) / adjustFrequency : 1;
-
-        lastAdjustTime = currTime;
-        nextAdjustTime = currTime + adjustFrequency;
-
-        for (let i = 0; i < adjustCount; ++i) adjustMarketPrices();
-    }
+    updateStockPrices();
 
     let stockMarketStringArr = Object.keys(currPrices).map(key => {
         let priceString = currPrices[key].toString();
@@ -35,8 +24,32 @@ module.exports.run = async(client, message, args) => {
     message.channel.send(createStockEmbed(stockMarketStringArr)).catch(console.error);
 };
 
+module.exports.getCurrentPrices = function() {
+    updateStockPrices();
+    return currPrices;
+};
+
+module.exports.getNextAdjustTime = function() {
+    updateStockPrices();
+    return nextAdjustTime;
+};
+
 module.exports.aliases = ['stocks', 'stockmarket', 'market'];
 module.exports.permissions = ['SEND_MESSAGES'];
+
+function updateStockPrices() {
+    if (!currPrices) currPrices = basePrices;
+
+    let currTime = new Date().getTime();
+    if (!nextAdjustTime || currTime >= nextAdjustTime) {
+        let adjustCount = lastAdjustTime ? (currTime - lastAdjustTime) / adjustFrequency : 1;
+
+        lastAdjustTime = currTime;
+        nextAdjustTime = currTime + adjustFrequency + helpers.getRandomInt(adjustVariationRange * -1, adjustVariationRange);
+
+        for (let i = 0; i < adjustCount; ++i) adjustMarketPrices();
+    }
+}
 
 function createStockEmbed(arr) {
     let date = new Date();

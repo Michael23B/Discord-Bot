@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 
 const voteFilter = (reaction) => reaction.emoji.name === '❌' || reaction.emoji.name === '✅';
 const cooldown = 600000;
-const votingTime = 60000;
+const votingTime = 30000;
 
 module.exports.run = async(client, message, args) => {
     let cd = client.checkCooldown(this.aliases[0], message.author.id);
@@ -69,7 +69,7 @@ function getVoteEmbed(memberToKick, memberWhoInitiated, votesNeeded, endTime) {
     return new Discord.RichEmbed()
         .setTitle(`Voting to kick ${memberToKick.user.username}`)
         .addField('Votes needed: ', votesNeeded)
-        .addField('Votes will be counted at:', new Date(endTime).toString())
+        .addField('Votes will be counted at:', new Date(endTime).toLocaleTimeString())
         .setImage(memberToKick.user.displayAvatarURL)
         .setColor('DARK_RED')
         .setFooter(`Vote initiated by ${memberWhoInitiated.user.username}`);

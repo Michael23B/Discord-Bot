@@ -27,8 +27,8 @@ module.exports.safeDeleteChannel = async function(guild, callId) {
     call.delete().catch(console.error);
 };
 
-module.exports.items = ['💰', '🍏', '🍅', '🍇', '🍓', '🍒', '🍆', '🍯', '🥑', '🐟', '🐠', '🐡', '🐬', '🐊', '🦑', '🦈', '🐳',
-    '🕶', '💍', '👑', '🛴', '🚲', '🛵', '🚗', '🏎', '🚁', '✈', '🚀'];
+module.exports.items = ['💰', '🍎', '🍅', '🍇', '🍓', '🍒', '🍆', '🍯', '🥑', '🐟', '🐠', '🐡', '🐬', '🐊', '🦑', '🦈', '🐳',
+    '🕶', '💍', '👑', '🛵', '🚗', '🏎', '🏠', '🏡', '🚁', '✈', '🚀'];
 
 //Updates our inventory so that we can update the items array and each players stats object will update accordingly
 module.exports.updateInventory = function(inventory) {

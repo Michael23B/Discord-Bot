@@ -137,3 +137,4 @@ function setupBotProperties() {
 
 //TODO: add reasons to commands to log who called the command
 //TODO: check own permissions before trying commands
+//TODO: make 24 hour time into 12 hour time
