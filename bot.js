@@ -10,6 +10,7 @@ try {
 }
 catch(e) {
     console.log('Couldn\'t find settings.json. Attempting to find environment variables...');
+
     settings.token = process.env.BOT_API_TOKEN;
     settings.prefix = process.env.BOT_PREFIX;
     settings.messageLifeTime = process.env.BOT_MESSAGE_LIFETIME;
