@@ -43,7 +43,7 @@ function updateStockPrices() {
     let currTime = new Date().getTime();
     //If some time has passed since stocks were last checked, we run adjustMarketPrice() multiple times to simulate better
     if (!nextAdjustTime || currTime >= nextAdjustTime) {
-        let adjustCount = lastAdjustTime ? (currTime - lastAdjustTime) / adjustFrequency : 1;
+        let adjustCount = lastAdjustTime ? Math.max((currTime - lastAdjustTime) / adjustFrequency, 20) : 1;
 
         lastAdjustTime = currTime;
         nextAdjustTime = currTime + adjustFrequency + helpers.getRandomInt(adjustVariationRange * -1, adjustVariationRange);

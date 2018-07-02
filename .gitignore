@@ -179,3 +179,5 @@ $RECYCLE.BIN/
 
 # End of https://www.gitignore.io/api/node,windows,webstorm,sublimetext
 settings.json
+data/inventories.json
+data/questions.json
