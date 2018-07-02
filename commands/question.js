@@ -18,6 +18,11 @@ module.exports.run = async(client, message, args) => {
             message.channel.send(questionString || 'No saved questions.');
             break;
         case 'ask':
+            if (questions.length === 0) {
+                message.channel.send('No saved questions.')
+                    .then(msg => msg.delete(client.msgLife)).catch(console.error);
+                break;
+            }
             if (askingQuestion) {
                 message.reply(`please wait for ${currPlayer} to answer first.`)
                     .then(msg => msg.delete(client.msgLife)).catch(console.error);
@@ -116,7 +121,7 @@ async function createQuestionEmbed(message, question, includeAnswer) {
         .setImage(question.image)
         .setColor(member.colorRole ? member.colorRole.color : 'BLUE')
         .addField('Question:', `${question.question}`)
-        .setFooter(includeAnswer ? `Answer: ${question.answer}` : '')
+        .setFooter(includeAnswer ? `Answer: ${question.answer}` : '');
 }
 
 async function getQuestionsObject() {

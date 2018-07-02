@@ -99,6 +99,9 @@ function setupBotProperties() {
     client.prefix = settings.prefix;
     client.msgLife = settings.messageLifeTime;
 
+    if (!fs.existsSync('./data/questions.json'))
+        fs.writeFileSync('./data/questions.json', JSON.stringify([], null, 4), () => console.error);
+
     //Command cooldowns
     client.cooldowns = {};
     //If there is no cooldown for that command, creates one then starts a cooldown for the requested player
@@ -124,7 +127,14 @@ function setupBotProperties() {
 
     //Player statistics
     client.inventories = (() => {
-        let raw = fs.readFileSync('./data/inventories.json');
+        let raw;
+        try {
+           raw = fs.readFileSync('./data/inventories.json');
+        }
+        catch (e) {
+            fs.writeFileSync('./data/inventories.json', JSON.stringify({}, null, 4), () => console.error);
+            raw = fs.readFileSync('./data/inventories.json');
+        }
         return JSON.parse(raw);
     })();
     client.savePlayerInventory = function() {
