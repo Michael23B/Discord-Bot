@@ -4,12 +4,12 @@
   "description": "powerful bot (of hell)",
   "main": "bot.js",
   "scripts": {
+    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Michael Burnett",
   "license": "ISC",
   "dependencies": {
-    "colorsys": "^1.0.21",
     "discord.js": "^11.3.2",
     "superagent": "^3.8.3"
   },

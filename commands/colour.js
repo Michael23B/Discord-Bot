@@ -23,7 +23,8 @@ module.exports.run = async(client, message, args) => {
     await target.colorRole.setColor(newCol = helpers.getColour(args))
         .then(message.channel.send(`setting colour to [${newCol[0]},${newCol[1]},${newCol[2]}]`, {reply: target }))
         .catch(err => {
-            message.reply(`${target.colorRole} is too powerful for me to change. Adjust role positions in the server settings.`)
+            message.reply(`${target.colorRole} is too powerful for me to change.` +
+                ` Adjust role positions in the server settings or remove your current colour role and I can give you a new one.`)
                 .catch(console.error);
         });
 };

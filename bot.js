@@ -1,9 +1,12 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const helpers = require('./helpers.js');
-let settings;
+const settings = {};
 try {
-    settings = require('./settings.json');
+    let settingsFile = require('./settings.json');
+    Object.keys(settingsFile).forEach(key => {
+        settings[key] = settingsFile[key];
+    });
 }
 catch(e) {
     console.log('Couldn\'t find settings.json. Attempting to find environment variables...');
