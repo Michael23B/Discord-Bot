@@ -29,7 +29,7 @@ module.exports.run = async(client, message, args) => {
     let inventory = client.getInventoryFor(message.author.id);
     //Check if the user can afford the items
     if (inventory['💰'] - totalCost < 0) {
-        message.reply(`you don't have that much. You have 💰x${inventory['💰']}`)
+        message.reply(`you don't have that much. You have 💰x${inventory['💰']}.`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
@@ -44,7 +44,7 @@ module.exports.run = async(client, message, args) => {
     //Finally, purchase the item
     client.changeItemAmountFor(message.author.id, '💰', totalCost * -1);
     client.changeItemAmountFor(message.author.id, args[0], parseInt(args[1]));
-    message.reply(`you purchased ${args[1]}x${args[0]} for 💰x${totalCost}.`).catch(console.error);
+    message.reply(`you purchased ${args[0]}x${args[1]} for 💰x${totalCost}.`).catch(console.error);
 };
 
 module.exports.aliases = ['buy', 'purchase'];
