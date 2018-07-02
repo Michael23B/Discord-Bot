@@ -1,7 +1,18 @@
-const settings = require('./settings.json');
 const Discord = require('discord.js');
 const fs = require('fs');
 const helpers = require('./helpers.js');
+let settings;
+try {
+    settings = require('./settings.json');
+}
+catch(e) {
+    console.log('Couldn\'t find settings.json. Attempting to find environment variables...');
+    settings.token = process.env.BOT_API_TOKEN;
+    settings.prefix = process.env.BOT_PREFIX;
+    settings.messageLifeTime = process.env.BOT_MESSAGE_LIFETIME;
+
+    if (!settings) console.log('Couldn\'t find necessary environment variables.');
+}
 
 //Setup bot
 const client = new Discord.Client();
