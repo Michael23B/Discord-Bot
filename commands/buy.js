@@ -11,17 +11,14 @@ module.exports.run = async(client, message, args) => {
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
-
     //We limit the number of items a user can buy each adjust period, reset it if we are no longer in the same period
     if (nextAdjustTime !== stocks.getNextAdjustTime()) {
         itemUserMap = {};
         nextAdjustTime = stocks.getNextAdjustTime();
     }
 
-    //check map for item purchase limit here
-
     let price = stocks.getCurrentPrices()[args[0]];
-
+    //Check if an item exists
     if (!price) {
         message.reply('I couldn\'t find that item. You can see items to buy using `>stocks`.')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
@@ -30,13 +27,21 @@ module.exports.run = async(client, message, args) => {
 
     let totalCost = price * parseInt(args[1]);
     let inventory = client.getInventoryFor(message.author.id);
-
-    if (inventory['💰'] - price < 0) {
+    //Check if the user can afford the items
+    if (inventory['💰'] - totalCost < 0) {
         message.reply(`you don't have that much. You have 💰x${inventory['💰']}`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
-
+    //Check if the user has purchased too many items this period
+    let itemsLeft = checkAndUpdateLimit(message.author.id, args[1]);
+    if (itemsLeft === -1) {
+        message.reply(`you can purchase no more than ${maxItemPerAdjust} items each time the market adjusts.` +
+            ` The next period begins at ${new Date(nextAdjustTime).toLocaleTimeString()}.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+    //Finally, purchase the item
     client.changeItemAmountFor(message.author.id, '💰', totalCost * -1);
     client.changeItemAmountFor(message.author.id, args[0], parseInt(args[1]));
     message.reply(`you purchased ${args[1]}x${args[0]} for 💰x${totalCost}.`).catch(console.error);
@@ -44,3 +49,14 @@ module.exports.run = async(client, message, args) => {
 
 module.exports.aliases = ['buy', 'purchase'];
 module.exports.permissions = ['SEND_MESSAGES'];
+
+function checkAndUpdateLimit(userId, amount) {
+    if (!itemUserMap.hasOwnProperty(userId)) {
+        itemUserMap[userId] = maxItemPerAdjust;
+    }
+
+    if (itemUserMap[userId] - parseInt(amount) < 0) return -1;
+
+    itemUserMap[userId] -= parseInt(amount);
+    return itemUserMap[userId];
+}
