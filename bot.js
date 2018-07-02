@@ -13,6 +13,11 @@ client.on('ready', async () => {
     console.log(`To add me to a server, go here sir:\n ${link}`);
 });
 
+client.on('guildCreate', async guild => {
+    guild.channels.find(channel => channel.type === 'text')
+        .send('Hello sirs, you may type `>help` if you want to know the full extent of my power.').catch(console.error);
+});
+
 client.on('message', async message => {
     if (message.author.bot) return;
     if (message.channel.type === 'dm') return; //TODO: allow some commands in dm channel (like help)

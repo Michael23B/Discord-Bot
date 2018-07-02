@@ -2,11 +2,12 @@ const helpers = require('../helpers.js');
 
 module.exports.run = async(client, message, args) => {
     let target = message.mentions.members.first() || message.member;
-
+    let isOwner = message.guild.owner === message.member;
     //Compare permissions for setting another members colour
     if (target !== message.member) {
-        if (target.hasPermission('ADMINISTRATOR', false, true, true)
-            || target.highestRole.position >= message.member.highestRole.position) {
+        if ((target.hasPermission('ADMINISTRATOR', false, true, true)
+            || target.highestRole.position >= message.member.highestRole.position)
+            && !isOwner) {
             message.reply(`${target.user.username} has a power level equal to or greater than yours.`)
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
             return;
@@ -20,8 +21,11 @@ module.exports.run = async(client, message, args) => {
         await target.addRole(role).catch(console.error);
     }
     await target.colorRole.setColor(newCol = helpers.getColour(args))
-        .then(message.channel.send(`colour set to [${newCol[0]},${newCol[1]},${newCol[2]}]`, {reply: target }))
-        .catch(console.error);
+        .then(message.channel.send(`setting colour to [${newCol[0]},${newCol[1]},${newCol[2]}]`, {reply: target }))
+        .catch(err => {
+            message.reply(`${target.colorRole} is too powerful for me to change. Adjust role positions in the server settings.`)
+                .catch(console.error);
+        });
 };
 
 module.exports.aliases = ['colour', 'color', 'rgb'];
