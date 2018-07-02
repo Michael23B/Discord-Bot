@@ -41,6 +41,7 @@ function updateStockPrices() {
     if (!currPrices) currPrices = basePrices;
 
     let currTime = new Date().getTime();
+    //If some time has passed since stocks were last checked, we run adjustMarketPrice() multiple times to simulate better
     if (!nextAdjustTime || currTime >= nextAdjustTime) {
         let adjustCount = lastAdjustTime ? (currTime - lastAdjustTime) / adjustFrequency : 1;
 

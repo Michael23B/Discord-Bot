@@ -16,7 +16,7 @@ module.exports.run = async(client, message, args) => {
 
     client.startCooldown(this.aliases[0], message.author.id, new Date().getTime() + cooldown);
 
-    message.reply(`You got ${dailyResult.item1}x${dailyResult.amount1} and ${dailyResult.item2}x${dailyResult.amount2}.`)
+    message.reply(`you got ${dailyResult.item1}x${dailyResult.amount1} and ${dailyResult.item2}x${dailyResult.amount2}.`)
         .catch(console.error);
 };
 

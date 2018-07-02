@@ -15,7 +15,7 @@ module.exports.run = async(client, message, args) => {
 
     client.startCooldown(this.aliases[0], message.author.id, new Date().getTime() + cooldown);
 
-    message.reply(`You got ${hourlyResult.item1}x${hourlyResult.amount1}.`).catch(console.error);
+    message.reply(`you got ${hourlyResult.item1}x${hourlyResult.amount1}.`).catch(console.error);
 };
 
 module.exports.aliases = ['hourly'];

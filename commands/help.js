@@ -47,6 +47,7 @@ async function createHelpEmbed(client, message, args) {
             '>stocks\n' +
             '>buy [item to buy] [amount]\n' +
             '>sell [item to sell] [amount]\n' +
+            '>give [item to give] [amount] [@username]\n' +
             '>gamble [amount to gamble]```')
         .setFooter(`[Arguments] are mostly optional. Type ${client.prefix}help detailed for more info.`);
 }
@@ -124,8 +125,10 @@ async function createDetailedHelpEmbed(client, message, args) {
             '```>buy [item to buy] [amount]```' +
             'Purchases the requested amount of an item at the current market price. Max of 1000 item purchases every stock adjustment.\n' +
             '```>sell [item to sell] [amount]```' +
-            'Sells the requested amount of an item that you own at the current market price. [amount] can be `all` to sell all of that item.\n' +
+            'Sells the requested amount of an item that you own at the current market price. [amount] can be `all`.\n' +
+            '```>give [item to give] [amount] [@username]```' +
+            'Gives the target user the requested amount of an item that you own. [amount] can be `all`.\n' +
             '```>gamble [amount to gamble]```' +
-            'Gambles your money (not a scam). [amount] can be `all` to sell all of that item.\n' +
-            '`>inventory, >i, >daily, >hourly, >stocks, >buy, >sell, >gamble`')
+            'Gambles your money (not a scam). [amount] can be `all`.\n' +
+            '`>inventory, >i, >daily, >hourly, >stocks, >buy, >sell, >give, >gamble`')
 }
