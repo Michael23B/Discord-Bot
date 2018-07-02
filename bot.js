@@ -2,13 +2,14 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const helpers = require('./helpers.js');
 const settings = {};
-try {
+
+if (fs.existsSync('./settings.json')) {
     let settingsFile = require('./settings.json');
     Object.keys(settingsFile).forEach(key => {
         settings[key] = settingsFile[key];
     });
 }
-catch(e) {
+else {
     console.log('Couldn\'t find settings.json. Attempting to find environment variables...');
 
     settings.token = process.env.BOT_API_TOKEN;
@@ -17,6 +18,10 @@ catch(e) {
 
     if (!settings) console.log('Couldn\'t find necessary environment variables.');
 }
+if (!fs.existsSync('./data/questions.json'))
+    fs.writeFileSync('./data/questions.json', JSON.stringify([], null, 4), () => console.error);
+if (!fs.existsSync('./data/inventories.json'))
+    fs.writeFileSync('./data/inventories.json', JSON.stringify({}, null, 4), () => console.error);
 
 //Setup bot
 const client = new Discord.Client();
@@ -100,9 +105,6 @@ function setupBotProperties() {
     client.prefix = settings.prefix;
     client.msgLife = settings.messageLifeTime;
 
-    if (!fs.existsSync('./data/questions.json'))
-        fs.writeFileSync('./data/questions.json', JSON.stringify([], null, 4), () => console.error);
-
     //Command cooldowns
     client.cooldowns = {};
     //If there is no cooldown for that command, creates one then starts a cooldown for the requested player
@@ -128,14 +130,7 @@ function setupBotProperties() {
 
     //Player statistics
     client.inventories = (() => {
-        let raw;
-        try {
-           raw = fs.readFileSync('./data/inventories.json');
-        }
-        catch (e) {
-            fs.writeFileSync('./data/inventories.json', JSON.stringify({}, null, 4), () => console.error);
-            raw = fs.readFileSync('./data/inventories.json');
-        }
+        let raw = fs.readFileSync('./data/inventories.json');
         return JSON.parse(raw);
     })();
     client.savePlayerInventory = function() {
