@@ -2,6 +2,8 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const helpers = require('./helpers.js');
 const settings = {};
+const path = require("path");
+const dataDir = path.join(process.cwd(), 'data/');
 
 if (fs.existsSync('./settings.json')) {
     let settingsFile = require('./settings.json');
@@ -18,6 +20,10 @@ else {
 
     if (!settings) console.log('Couldn\'t find necessary environment variables.');
 }
+
+//If we can't find our data files, create them
+if (!fs.existsSync(dataDir))
+    fs.mkdirSync(dataDir);
 if (!fs.existsSync('./data/questions.json'))
     fs.writeFileSync('./data/questions.json', JSON.stringify([], null, 4), () => console.error);
 if (!fs.existsSync('./data/inventories.json'))
