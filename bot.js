@@ -9,8 +9,8 @@ setupBotProperties();
 
 client.on('ready', async () => {
     console.log(client.user.username + ' ready for deployment sir.\n');
-    //let link = await client.generateInvite(['ADMINISTRATOR']).catch(console.error);
-    //console.log(`To add me to a server, go here sir:\n ${link}`);
+    let link = await client.generateInvite(['ADMINISTRATOR']).catch(console.error);
+    console.log(`To add me to a server, go here sir:\n ${link}`);
 });
 
 client.on('message', async message => {
@@ -128,7 +128,7 @@ function setupBotProperties() {
     };
 
     //Save player stats every so often in case the bot goes down
-    setInterval(client.savePlayerInventory, 10000);//TODO:temporary, make this once every 5 minutes or something when im done testing
+    setInterval(client.savePlayerInventory, 600000);//TODO:temporary, make this once every 5 minutes or something when im done testing
     //Updates the inventories of each player, in case the items array has changed (found in the helpers.js file)
     Object.keys(client.inventories).forEach(id => {
         client.inventories[id] = helpers.updateInventory(client.inventories[id]);

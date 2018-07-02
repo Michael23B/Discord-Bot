@@ -41,6 +41,13 @@ async function createHelpEmbed(client, message, args) {
             '>simpsons [Simpsons quote]```')
         .addField('Moderation:', '```>votekick [@username]\n' +
             '>disable [@username]```')
+        .addField('Money:', '```>inventory [@username]\n' +
+            '>daily\n' +
+            '>hourly\n' +
+            '>stocks\n' +
+            '>buy [item to buy] [amount]\n' +
+            '>sell [item to sell] [amount]\n' +
+            '>gamble [amount to gamble]```')
         .setFooter(`[Arguments] are mostly optional. Type ${client.prefix}help detailed for more info.`);
 }
 
@@ -106,7 +113,19 @@ async function createDetailedHelpEmbed(client, message, args) {
             'Prevents the user from using bot commands. Works as long as the user has the \'bot use disabled\'' +
             ' role. If they have the MANAGE_ROLES privilege, this command won\'t stop them.\n' +
             '`>votekick, >kick, >disable`')
-        .setFooter('Will add examples later probably.');
+        .addField('Money:', '```>inventory [@username]```' +
+            'Displays the current inventory and net worth of the targeted user or yourself if no mention is supplied.\n' +
+            '```>daily```' +
+            'Gives you a random amount of 💰 and poor-tier items. Can be performed once every 24 hours.\n' +
+            '```>hourly```' +
+            'Gives you a random amount of 💰. Can be performed once every hour.\n' +
+            '```>stocks```' +
+            'Presents the current stock market price of each item. Stocks are updated about every ten minutes.\n' +
+            '```>buy [item to buy] [amount]```' +
+            'Purchases the requested amount of an item at the current market price. Max of 1000 item purchases every stock adjustment.\n' +
+            '```>sell [item to sell] [amount]```' +
+            'Sells the requested amount of an item that you own at the current market price. [amount] can be `all` to sell all of that item.\n' +
+            '```>gamble [amount to gamble]```' +
+            'Gambles your money (not a scam). [amount] can be `all` to sell all of that item.\n' +
+            '`>inventory, >i, >daily, >hourly, >stocks, >buy, >sell, >gamble`')
 }
-
-//TODO: add examples to help, put help strings in the command files and pull them from there

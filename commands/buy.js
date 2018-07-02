@@ -37,6 +37,7 @@ module.exports.run = async(client, message, args) => {
     let itemsLeft = checkAndUpdateLimit(message.author.id, args[1]);
     if (itemsLeft === -1) {
         message.reply(`you can purchase no more than ${maxItemPerAdjust} items each time the market adjusts.` +
+            ` You can purchase ${checkAndUpdateLimit(message.author.id, 0)} more items this period.` +
             ` The next period begins at ${new Date(nextAdjustTime).toLocaleTimeString()}.`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;

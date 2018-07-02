@@ -50,9 +50,9 @@ module.exports.aliases = ['gamble', 'bet', 'g'];
 module.exports.permissions = ['SEND_MESSAGES'];
 
 function getGambleMultiplier() {
-    let randInt = helpers.getRandomInt(1,21);
+    let randInt = helpers.getRandomInt(1,22);
 
-    if (randInt === 20) return 4;
-    else if (randInt > 11) return 1;
+    if (randInt === 21) return 4;
+    else if (randInt > 12) return 1;
     else return -1;
 }

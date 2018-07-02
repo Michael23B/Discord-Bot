@@ -34,7 +34,7 @@ module.exports.getNextAdjustTime = function() {
     return nextAdjustTime;
 };
 
-module.exports.aliases = ['stocks', 'stockmarket', 'market'];
+module.exports.aliases = ['stocks', 'stock', 'stockmarket', 'market'];
 module.exports.permissions = ['SEND_MESSAGES', 'EMBED_LINKS'];
 
 function updateStockPrices() {
