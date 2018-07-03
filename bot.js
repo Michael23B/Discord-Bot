@@ -4,6 +4,7 @@ const helpers = require('./helpers.js');
 const settings = {};
 const path = require("path");
 const dataDir = path.join(process.cwd(), 'data/');
+const Cloud = require('./googleCloud.js');
 
 if (fs.existsSync('./settings.json')) {
     let settingsFile = require('./settings.json');
@@ -139,8 +140,9 @@ function setupBotProperties() {
         let raw = fs.readFileSync('./data/inventories.json');
         return JSON.parse(raw);
     })();
-    client.savePlayerInventory = function() {
-        fs.writeFile("./data/inventories.json", JSON.stringify(client.inventories, null, 4), () => console.error);
+    client.savePlayerInventory = async function() {
+        await fs.writeFile("./data/inventories.json", JSON.stringify(client.inventories, null, 4), () => console.error);
+        if (Cloud.ACTIVE) Cloud.uploadDataFilesToGoogleCloud(true, false).catch(console.error);
     };
     //Creates a new inventory for the player if one doesn't already exist, then returns the inventory of that player
     client.getInventoryFor = function(userId) {
@@ -164,6 +166,8 @@ function setupBotProperties() {
     Object.keys(client.inventories).forEach(id => {
         client.inventories[id] = helpers.updateInventory(client.inventories[id]);
     });
+
+    if (Cloud.ACTIVE) Cloud.getDataFilesFromGoogleCloud(client).catch(console.error);
 }
 
 //TODO: add reasons to commands to log who called the command

@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const helpers = require('../helpers');
+const Cloud = require('../googleCloud.js');
 
 let askingQuestion = false;
 let currPlayer = "";
@@ -77,6 +78,7 @@ module.exports.run = async(client, message, args) => {
 
             questions.push(newQuestion);
             fs.writeFile("./data/questions.json", JSON.stringify(questions, null, 4), () => console.error);
+            if (Cloud.ACTIVE) Cloud.uploadDataFilesToGoogleCloud(false, true).catch(console.error);
 
             let embed = await createQuestionEmbed(message, newQuestion, true);
             message.reply(`I added it. Here's how it looks:`);
@@ -121,7 +123,7 @@ async function createQuestionEmbed(message, question, includeAnswer) {
         .setImage(question.image)
         .setColor(member.colorRole ? member.colorRole.color : 'BLUE')
         .addField('Question:', `${question.question}`)
-        .setFooter(includeAnswer ? `Answer: ${question.answer}` : '');
+        .setFooter(includeAnswer ? `Answer: ${question.answer}` : 'You can answer with >a [your answer]');
 }
 
 async function getQuestionsObject() {

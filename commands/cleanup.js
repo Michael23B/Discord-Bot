@@ -50,7 +50,7 @@ async function cleanUp(client, message, args) {
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
             return;
         }
-        deleteCount = (args[1] && !isNaN(args[1])) ? args[1] : 10;
+        deleteCount = (args[1] && !isNaN(args[1])) ? Math.min(args[1], 100) : 10;
         let messages = await message.channel.fetchMessages({limit: deleteCount}).catch(console.error);
         let user = message.mentions ? message.mentions.members.first() : null;
 
