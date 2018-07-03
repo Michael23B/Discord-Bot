@@ -1,5 +1,7 @@
 const Discord = require('discord.js');
 
+const cooldown = 25000;
+
 module.exports.run = async(client, message, args) => {
     if (args[0] === 'detailed' || args[0] === 'true') {
         let helpEmbed = await createDetailedHelpEmbed(client, message, args).catch(console.error);
@@ -7,11 +9,19 @@ module.exports.run = async(client, message, args) => {
             .catch(console.error)
             .then(() => message.reply('I\'ve sent you some information')
                 .then(msg => msg.delete(client.msgLife)).catch(console.error));
+        return;
     }
-    else {
-        let helpEmbed = await createHelpEmbed(client, message, args).catch(console.error);
-        message.channel.send(helpEmbed);
+    //Cooldown only for channel help embed, since it's large, it may be annoying
+    let cd = client.checkCooldown(this.aliases[0], message.author.id);
+    if (cd > 0) {
+        message.reply(`wait ${cd / 1000} seconds before using this command again.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
     }
+
+    let helpEmbed = await createHelpEmbed(client, message, args).catch(console.error);
+    message.channel.send(helpEmbed);
+    client.startCooldown(this.aliases[0], message.author.id, new Date().getTime() + cooldown);
 };
 
 module.exports.aliases = ['help', 'h', 'commands'];

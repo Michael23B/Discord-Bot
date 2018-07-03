@@ -1,15 +1,6 @@
 const helpers = require('../helpers');
 
-const cooldown = 10000;
-
 module.exports.run = async(client, message, args) => {
-    let cd = client.checkCooldown(this.aliases[0], message.author.id);
-    if (cd > 0) {
-        message.reply(`wait ${cd / 1000} seconds before using this command again.`)
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
-        return;
-    }
-
     let inventory = client.getInventoryFor(message.author.id);
     if (args[0] === 'all') args[0] = inventory['💰'];
 
@@ -43,7 +34,6 @@ module.exports.run = async(client, message, args) => {
     message.reply(reply).catch(console.error);
 
     client.changeItemAmountFor(message.author.id, '💰', args[0] * gambleResult);
-    client.startCooldown(this.aliases[0], message.author.id, new Date().getTime() + cooldown);
 };
 
 module.exports.aliases = ['gamble', 'bet', 'g'];

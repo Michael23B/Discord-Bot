@@ -125,7 +125,7 @@ function setupBotProperties() {
         let index = client.cooldowns[cmdName].findIndex(x => x.userId === userId);
         if (index === -1) return 0;
         else {
-            let currDate = new Date.now();
+            let currDate = new Date().getTime();
             let endDate = client.cooldowns[cmdName][index].endDate;
             if (currDate >= endDate) {
                 client.cooldowns[cmdName].splice(index, 1);
