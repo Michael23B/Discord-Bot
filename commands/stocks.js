@@ -61,12 +61,12 @@ function createStockEmbed(arr) {
     let col3 = arr.map((key, i) => { return i >= (arrThird*2) ? key : ''}).join('');
 
     return new Discord.RichEmbed()
-        .setTitle(`Market prices | ${date.toDateString()} - ${date.toLocaleTimeString()}`)
+        .setTitle(`Market prices | ${date.toDateString()} - ${date.toLocaleTimeString('en-AU', {timeZone: 'Australia/Queensland'})}`)
         .addField(`♿ 💲`, col1, true)
         .addField(`💸👨`, col2, true)
         .addField(`🔫👨💰💎`, col3, true)
         .setColor('BLUE')
-        .setFooter(`Next stock market shift at ${new Date(nextAdjustTime).toLocaleTimeString()}`);
+        .setFooter(`Next stock market shift at ${new Date(nextAdjustTime).toLocaleTimeString('en-AU', {timeZone: 'Australia/Queensland'})}`);
 }
 
 function adjustMarketPrices() {

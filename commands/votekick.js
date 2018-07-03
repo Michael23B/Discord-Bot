@@ -69,7 +69,7 @@ function getVoteEmbed(memberToKick, memberWhoInitiated, votesNeeded, endTime) {
     return new Discord.RichEmbed()
         .setTitle(`Voting to kick ${memberToKick.user.username}`)
         .addField('Votes needed: ', votesNeeded)
-        .addField('Votes will be counted at:', new Date(endTime).toLocaleTimeString())
+        .addField('Votes will be counted at:', new Date(endTime).toLocaleTimeString('en-AU', {timeZone: 'Australia/Queensland'}))
         .setImage(memberToKick.user.displayAvatarURL)
         .setColor('DARK_RED')
         .setFooter(`Vote initiated by ${memberWhoInitiated.user.username}`);

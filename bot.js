@@ -125,7 +125,7 @@ function setupBotProperties() {
         let index = client.cooldowns[cmdName].findIndex(x => x.userId === userId);
         if (index === -1) return 0;
         else {
-            let currDate = new Date().getTime();
+            let currDate = new Date.now();
             let endDate = client.cooldowns[cmdName][index].endDate;
             if (currDate >= endDate) {
                 client.cooldowns[cmdName].splice(index, 1);
@@ -160,8 +160,8 @@ function setupBotProperties() {
         client.setInventoryFor(userId, inventory);
     };
 
-    //Save player stats every so often in case the bot goes down
-    setInterval(client.savePlayerInventory, 480000);
+    //Save player stats every so often in case the bot goes down (25 min)
+    setInterval(client.savePlayerInventory, 1500000);
     //Updates the inventories of each player, in case the items array has changed (found in the helpers.js file)
     Object.keys(client.inventories).forEach(id => {
         client.inventories[id] = helpers.updateInventory(client.inventories[id]);

@@ -38,7 +38,7 @@ module.exports.run = async(client, message, args) => {
     if (itemsLeft === -1) {
         message.reply(`you can purchase no more than ${maxItemPerAdjust} items each time the market adjusts.` +
             ` You can purchase ${checkAndUpdateLimit(message.author.id, 0)} more items this period.` +
-            ` The next period begins at ${new Date(nextAdjustTime).toLocaleTimeString()}.`)
+            ` The next period begins at ${new Date(nextAdjustTime).toLocaleTimeString('en-AU', {timeZone: 'Australia/Queensland'})}.`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
