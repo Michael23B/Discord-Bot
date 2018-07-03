@@ -1,4 +1,8 @@
-const Storage = require('@google-cloud/storage');
+const Storage = require('@google-cloud/storage')({
+    projectId: 'aesthetic-fx-209012',
+    credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS)
+});
+
 const fs = require('fs');
 let storage;
 //If ACTIVE is false, we do not upload or retrieve our data from the bucket. Set to false if you are running locally or
@@ -6,14 +10,15 @@ let storage;
 module.exports.ACTIVE = true;
 
 //If we have application credentials, we don't need to supply a key file
-if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    storage = new Storage();
-}
-else {
-    storage = new Storage({
-        keyFilename: 'C:\\Users\\User\\Documents\\Projects\\JS\\bucketKey.json' //replace keyFilename with your path to google auth key file
-    });
-}
+storage = new Storage();
+
+//local key file
+/*
+const Storage = require('@google-cloud/storage');
+storage = new Storage({
+    keyFilename: 'C:\\Users\\User\\Documents\\Projects\\JS\\bucketKey.json' //replace keyFilename with your path to google auth key file
+});
+*/
 
 module.exports.getDataFilesFromGoogleCloud = async function(client) {
     const bucketName = 'discord-bot-of-hell';
