@@ -1,16 +1,17 @@
-const ytdl = require('ytdl-core');
-
 module.exports.run = async(client, message, args) => {
-    if (!message.member.voiceChannel || !message.member.voiceChannel !== client.voiceChannel) {
-        message.reply('we need to be in the same voice channel for you to stop me.')
+    const botMember = message.guild.members.find(x => x.id === client.user.id);
+
+    if (!message.member.voiceChannel || message.member.voiceChannel !== botMember.voiceChannel) {
+        message.reply('you must send that command from the same channel.')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
     }
-    if (!client.voiceChannel) {
+    if (!botMember.voiceChannel) {
         message.reply('I am not in a voice channel sir.')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
     else {
-        client.voiceChannel.leave();
+        botMember.voiceChannel.leave();
         message.reply('👋 bye sir').catch(console.error);
     }
 };
