@@ -122,7 +122,7 @@ async function createDetailedHelpEmbed(client, message, args) {
             'Begins a vote to kick the mentioned user. Requires a majority vote to succeed.\n' +
             '```>disable [@username]```' +
             'Prevents the user from using bot commands. Works as long as the user has the \'bot use disabled\'' +
-            ' role. If they have the MANAGE_ROLES privilege, this command won\'t stop them.\n' +
+            ' role. If they have the MANAGE_ROLES privilege or a higher role than the \'bot use disabled\', this command won\'t stop them.\n' +
             '`>votekick, >kick, >disable`')
         .addField('Money:', '```>inventory [@username]```' +
             'Displays the current inventory and net worth of the targeted user or yourself if no mention is supplied.\n' +

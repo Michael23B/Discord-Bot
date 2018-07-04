@@ -50,6 +50,9 @@ client.on('message', async message => {
     if (message.channel.type === 'dm') return; //TODO: allow some commands in dm channel (like help)
     if (!message.content.startsWith(client.prefix)) return;
 
+    //Development server
+    //if (message.guild.id !== '453053444547280906') return;
+
     let args = message.content.split(' ');
     let command = args[0].toLowerCase();
     args = args.splice(1);
