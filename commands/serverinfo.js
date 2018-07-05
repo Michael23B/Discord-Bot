@@ -42,6 +42,6 @@ async function createServerInfoEmbed(client, message) {
         .addField('Current roles:', `${roles || "None"}`)
         .addField('Server created:', message.guild.createdAt)
         .addField('Current channel topic:', `${message.channel.topic || 'None'}`)
-        .addField('Total server net worth:', totalNetWorth)
+        .addField('Total server net worth:', `${totalNetWorth.toLocaleString('en-US', {style: 'currency', 'currency': 'USD'})}`)
         .addField('Richest user', richestUser.username || 'all poor');
 }

@@ -2,7 +2,7 @@ module.exports.run = async(client, message, args) => {
     const botMember = message.guild.members.find(x => x.id === client.user.id);
 
     if (!message.member.voiceChannel || message.member.voiceChannel !== botMember.voiceChannel) {
-        message.reply('you must send that command from the same channel.')
+        message.reply('you must send that command from the same channel that I am playing in.')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
@@ -12,7 +12,7 @@ module.exports.run = async(client, message, args) => {
     }
     else {
         botMember.voiceChannel.leave();
-        message.reply('👋 bye sir').catch(console.error);
+        message.reply('stopped playing.').catch(console.error);
     }
 };
 
