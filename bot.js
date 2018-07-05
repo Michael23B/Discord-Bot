@@ -51,7 +51,7 @@ client.on('message', async message => {
     if (!message.content.startsWith(client.prefix)) return;
 
     //Development server
-    //if (message.guild.id !== '453053444547280906') return;
+    if (message.guild.id !== '453053444547280906') return;
 
     let args = message.content.split(' ');
     let command = args[0].toLowerCase();

@@ -1,8 +1,8 @@
-const { stop } = require('./play.js');
+const { skip } = require('./play.js');
 
 module.exports.run = async(client, message, args) => {
-    stop(client, message, args);
+    skip(client, message, args);
 };
 
-module.exports.aliases = ['stop'];
+module.exports.aliases = ['skip', 'next'];
 module.exports.permissions = ['SEND_MESSAGES', 'CONNECT', 'SPEAK'];
