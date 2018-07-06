@@ -14,9 +14,16 @@ module.exports.run = async(client, message, args) => {
     }
     running = true;
 
-
     const channel = message.member.voiceChannel;
     const serverQueue = queue.get(message.guild.id);
+
+    //We have a current queue, songs, the user supplied no video and we are currently paused -> un-pause
+    if (serverQueue && serverQueue.songs.length > 0 && serverQueue.playing === false && !args[0]) {
+        serverQueue.playing = true;
+        serverQueue.connection.dispatcher.resume();
+        message.reply('**Resumed music**').catch(console.error);
+        return running = false;
+    }
 
     if (!channel) {
         message.reply('you are not in a voice channel.')
@@ -44,7 +51,7 @@ module.exports.run = async(client, message, args) => {
             connection: null,
             songs: [createSongObject(songInfo, message)],
             volume: 5,
-            playing: false
+            playing: true
         };
 
         console.log(queueEntry.songs);
@@ -90,22 +97,9 @@ module.exports.stop = function(client, message, args) {
         return;
     }
 
-    const botMember = message.guild.members.find(x => x.id === client.user.id);
-
-    if (!message.member.voiceChannel || message.member.voiceChannel !== botMember.voiceChannel) {
-        message.reply('you must send that command from the same channel that I am playing in.')
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
-        return;
-    }
-    if (!botMember.voiceChannel) {
-        message.reply('I am not in a voice channel sir.')
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
-    }
-    else {
-        serverQueue.songs = [];
-        serverQueue.connection.dispatcher.end();
-        message.reply('stopped playing.').catch(console.error);
-    }
+    serverQueue.songs = [];
+    serverQueue.connection.dispatcher.end();
+    message.reply('stopped playing.').catch(console.error);
 };
 
 module.exports.changeVolume = function(client, message, args) {
@@ -113,22 +107,23 @@ module.exports.changeVolume = function(client, message, args) {
 
     if (!serverQueue) {
         message.reply('there\'s no songs playing right now.')
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            .catch(console.error);
         return;
     }
 
     if (!args[0]) {
-        message.reply(`the current volume is ${serverQueue.volume}. You can set the volume with \`>volume [1 - 20]\``)
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        message.reply(`the current volume is ${serverQueue.volume}. You can set the volume with \`>volume [1.0 - 20.0]\``)
+            .catch(console.error);
         return;
     }
+
     let newVolume = helpers.clamp(Number(args[0]), 1, 20);
 
     serverQueue.volume = newVolume;
     serverQueue.connection.dispatcher.setVolumeLogarithmic(newVolume * 0.1);
 
     message.reply(`volume set to ${newVolume}.`)
-        .then(msg => msg.delete()).catch(console.error);
+        .catch(console.error);
 };
 
 module.exports.nowPlaying = function(client, message, args) {
@@ -144,8 +139,30 @@ module.exports.nowPlaying = function(client, message, args) {
     message.channel.send(createNowPlayingEmbed(serverQueue.songs, botMember.colorRole.color)).catch(console.error);
 };
 
+module.exports.pause = function(client, message, args) {
+    const serverQueue = queue.get(message.guild.id);
+    const botMember = message.guild.members.find(x => x.id === client.user.id);
+
+    if (!serverQueue) {
+        message.reply('there\'s no songs playing right now.')
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+
+    if (!message.member.voiceChannel || message.member.voiceChannel !== botMember.voiceChannel) {
+        message.reply('you must send that command from the same channel that I am playing in.')
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+
+    serverQueue.playing = false;
+    serverQueue.connection.dispatcher.pause();
+    message.channel.send('**Music paused**').catch(console.error);
+};
+
 function play(guild) {
     const serverQueue = queue.get(guild.id);
+    serverQueue.playing = true;
     let song = serverQueue.songs[0];
 
     if (!song) {

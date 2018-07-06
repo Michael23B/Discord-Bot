@@ -34,7 +34,7 @@ module.exports.run = async(client, message, args) => {
     await target.addRole(role).catch(console.error);
 
     message.reply(`I will not respond to commands from ${target.user.username}.`)
-        .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        .catch(console.error);
 };
 
 module.exports.aliases = ['disable'];

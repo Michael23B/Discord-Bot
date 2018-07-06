@@ -25,7 +25,8 @@ module.exports.run = async(client, message, args) => {
         .catch(err => {
             message.reply(`${target.colorRole} is too powerful for me to change.` +
                 ` Adjust role positions in the server settings or remove your current colour role and I can give you a new one.`)
-                .catch(console.error);
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            console.error(err);
         });
 };
 

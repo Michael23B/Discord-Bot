@@ -31,7 +31,7 @@ async function cleanUp(client, message, args) {
             }
         });
         message.reply(`found ${deleteCount} roles named ${roleToDelete}. Getting rid of them now.`)
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            .catch(console.error);
     }
     else if (args[0] === 'messages') {
         if (!message.member.hasPermission('MANAGE_MESSAGES', false, true, true)) {
@@ -48,7 +48,7 @@ async function cleanUp(client, message, args) {
         await message.channel.bulkDelete(messages);
         message.reply(`I searched through the last ${deleteCount}` +
             ` messages and deleted ${messages.size} messages by ${user || 'everyone'}.`)
-            .then(msg => msg.delete(client.msgLife));
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
     else if (args[0] === 'calls') {
         if (!message.member.hasPermission('MANAGE_CHANNELS', false, true, true)) {
@@ -67,7 +67,7 @@ async function cleanUp(client, message, args) {
             entry.delete();
         });
         message.reply(`removed ${channels ? channels.size : 0} channels named ${channelName}`)
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            .catch(console.error);
     }
     else {
         message.reply('I don\'t know how to clean that up. Try: `>clean messages [amount]`, `>clean roles [role name]` or `>clean calls [call name]`')

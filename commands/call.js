@@ -58,8 +58,7 @@ async function createVoiceChannel(client, message, args) {
     let timeToDelete = args[1] && !isNaN(args[1]) ? helpers.clamp(args[1], 0, 10000) : 9999;
 
     if (timeToDelete >= 9999 || timeToDelete === 0) {
-        message.reply(`channel created.`)
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        message.reply(`channel created.`).catch(console.error);
         return;
     }
 
