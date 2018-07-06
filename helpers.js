@@ -84,7 +84,7 @@ module.exports.secondsToHMSString = function(seconds) {
     if (minutes < 10) minutes = '0' + minutes;
     if (remainingSeconds < 10) remainingSeconds = '0' + remainingSeconds;
 
-    return `${hours}:${minutes}:${remainingSeconds}`;
+    return `${hours !== '00' ? hours + ':' : ''}${minutes}:${remainingSeconds}`;
 };
 
 //Promise wrapper for fs.readFile so we can use await, .then(), etc.

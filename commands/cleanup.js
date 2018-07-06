@@ -70,7 +70,7 @@ async function cleanUp(client, message, args) {
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
     else {
-        message.reply('I don\'t know how to clean that up.')
+        message.reply('I don\'t know how to clean that up. Try: `>clean messages [amount]`, `>clean roles [role name]` or `>clean calls [call name]`')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
 }

@@ -7,7 +7,11 @@ module.exports.run = async(client, message, args) => {
 
     if (doggoUrl) {
         loadingMsg.edit('Ok I found a dog, it\'s loading... 👉 🐶');
-        await message.channel.send('', {files: [doggoUrl]}).catch(console.error);
+        await message.channel.send('', {files: [doggoUrl]}).catch(err => {
+            console.error(err);
+            message.reply('oops I found a dog that was too big to fit in discord, please try again.')
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        });
     }
     else message.channel.send('I couldn\'t find any dogs. :(').catch(console.error);
 
