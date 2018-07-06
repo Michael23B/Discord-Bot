@@ -130,5 +130,5 @@ async function getQuestionsObject() {
     return await helpers.readFile('./data/questions.json').then(data => JSON.parse(data)).catch(console.error);
 }
 
-//TODO: break switch case into smaller functions, allow editing of questions,
+//TODO: break switch case into smaller functions, allow editing of questions, change answer.js to call an exported answer function
 // different methods of attaching images (url), multiple choice questions, other stuff

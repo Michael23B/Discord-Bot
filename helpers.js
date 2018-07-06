@@ -75,5 +75,17 @@ module.exports.getColour = function(args) {
     return colour;
 };
 
+module.exports.secondsToHMSString = function(seconds) {
+    let hours = Math.floor(seconds / 3600);
+    let minutes = Math.floor(seconds / 60);
+    let remainingSeconds = Math.floor(seconds % 60);
+
+    if (hours < 10) hours = '0' + hours;
+    if (minutes < 10) minutes = '0' + minutes;
+    if (remainingSeconds < 10) remainingSeconds = '0' + remainingSeconds;
+
+    return `${hours}:${minutes}:${remainingSeconds}`;
+};
+
 //Promise wrapper for fs.readFile so we can use await, .then(), etc.
 module.exports.readFile = util.promisify(fs.readFile);

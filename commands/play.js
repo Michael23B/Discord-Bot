@@ -1,4 +1,6 @@
 const ytdl = require('ytdl-core');
+const Discord = require('discord.js');
+const helpers = require('../helpers');
 
 let queue = new Map();
 
@@ -13,13 +15,13 @@ module.exports.run = async(client, message, args) => {
         return;
     }
 
-    if (!args[1]) {
+    if (!args[0]) {
         message.reply('please provide a youtube video to play. `>play [Youtube video url]`')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
 
-    const songInfo = await ytdl.getInfo(args[1]).catch(err => {
+    const songInfo = await ytdl.getInfo(args[0]).catch(err => {
         message.reply(err.toString())
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
     });
@@ -31,7 +33,7 @@ module.exports.run = async(client, message, args) => {
             textChannel: message.channel,
             voiceChannel: channel,
             connection: null,
-            songs: [{title: songInfo.title, url: songInfo.video_url}],
+            songs: [createSongObject(songInfo, message)],
             volume: 0.5,
             playing: false
         };
@@ -41,9 +43,7 @@ module.exports.run = async(client, message, args) => {
         queueEntry.connection = await channel.join()
             .catch(err => {
                 message.reply('I couldn\'t join that channel.').then(msg => msg.delete(client.msgLife))
-                    .catch(err => {
-                    console.error(err);
-                });
+                    .catch(err => console.error(err));
                 console.error(err);
             });
 
@@ -54,33 +54,14 @@ module.exports.run = async(client, message, args) => {
         play(message.guild);
     }
     else {
-        serverQueue.songs.push({title: songInfo.title, url: songInfo.video_url});
-        message.channel.send(`${songInfo.title} added to the queue.`)
+        serverQueue.songs.push(createSongObject(songInfo, message));
+        message.channel.send(`\`${songInfo.title}(${helpers.secondsToHMSString(songInfo.length_seconds)})\` added to the queue.`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
 };
 
 module.exports.aliases = ['play'];
 module.exports.permissions = ['SEND_MESSAGES', 'CONNECT', 'SPEAK'];
-
-function play(guild) {
-    console.log('started playing');
-
-    const serverQueue = queue.get(guild.id);
-
-    if (!serverQueue.songs[0]) {
-        serverQueue.voiceChannel.leave();
-        queue.delete(guild.id);
-        return;
-    }
-
-    const dispatcher = serverQueue.connection.playStream(ytdl(serverQueue.songs[0].url))
-        .on('end', () => {
-            serverQueue.songs.shift();
-            play(guild);
-        })
-        .on('error', err => console.error(err));
-}
 
 module.exports.skip = function(client, message, args) {
     const serverQueue = queue.get(message.guild.id);
@@ -116,5 +97,64 @@ module.exports.stop = function(client, message, args) {
         message.reply('stopped playing.').catch(console.error);
     }
 };
+
+module.exports.nowPlaying = function(client, message, args) {
+    const serverQueue = queue.get(message.guild.id);
+
+    if (!serverQueue) {
+        message.reply('there\'s no songs playing right now.')
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+
+    message.channel.send(createNowPlayingEmbed(serverQueue.songs)).catch(console.error);
+};
+
+function play(guild) {
+    const serverQueue = queue.get(guild.id);
+    let song = serverQueue.songs[0];
+
+    if (!song) {
+        serverQueue.voiceChannel.leave();
+        queue.delete(guild.id);
+        return;
+    }
+
+    const dispatcher = serverQueue.connection.playStream(ytdl(song.url))
+        .on('end', () => {
+            serverQueue.songs.shift();
+            play(guild);
+        })
+        .on('error', err => console.error(err));
+
+    serverQueue.textChannel.send(`🎶Started playing: \`${song.title} (${helpers.secondsToHMSString(song.duration)})\`. Added by ${song.user}.🎶`)
+}
+
+function createSongObject(songInfo, message) {
+    return {
+        title: songInfo.title,
+        url: songInfo.video_url,
+        user: message.author.username,
+        img: songInfo.thumbnail_url,
+        duration: songInfo.length_seconds
+    }
+}
+
+function createNowPlayingEmbed(songs) {
+    let upcomingString = "";
+    songs.forEach((song, i) => {
+        if (i !== 0) {
+            upcomingString += `\`${song.title} (${helpers.secondsToHMSString(song.duration)})\`. Added by ${song.user}\n`;
+        }
+    });
+
+    return new Discord.RichEmbed()
+        .setTitle(`🎶Current Playlist🎶`)
+        .setColor('RANDOM')
+        .addField('Currently playing:', `\`${songs[0].title} (${helpers.secondsToHMSString(songs[0].duration)})\`. Added by ${songs[0].user}.`)
+        .addField('Upcoming songs:', upcomingString || 'No upcoming songs');
+}
 //add volume method
 //dispatcher.setVolumeLogarithmic(serverQueue.volume);
+
+//TODO: start from timestamp, pause, voting for skip, if channel is deleted, restart queue
