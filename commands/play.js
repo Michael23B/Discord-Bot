@@ -26,7 +26,7 @@ module.exports.run = async(client, message, args) => {
     if (!songInfo) return;
 
     if (!serverQueue) {
-        //Don't have a queue for the current server, make on and start playing
+        //Don't have a queue for the current server, make one and start playing
         let queueEntry = {
             textChannel: message.channel,
             voiceChannel: channel,
