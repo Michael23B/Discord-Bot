@@ -98,6 +98,29 @@ module.exports.stop = function(client, message, args) {
     }
 };
 
+module.exports.changeVolume = function(client, message, args) {
+    const serverQueue = queue.get(message.guild.id);
+
+    if (!serverQueue) {
+        message.reply('there\'s no songs playing right now.')
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+
+    if (!args[0]) {
+        message.reply(`the current volume is ${serverQueue.volume}. You can set the volume with \`>volume [0.1 - 2.0]\``)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
+    let newVolume = helpers.clamp(Number(args[0]), 0.1, 2.0);
+
+    serverQueue.volume = newVolume;
+    serverQueue.connection.dispatcher.setVolumeLogarithmic(newVolume);
+
+    message.reply(`volume set to ${newVolume}.`)
+        .then(msg => msg.delete()).catch(console.error);
+};
+
 module.exports.nowPlaying = function(client, message, args) {
     const serverQueue = queue.get(message.guild.id);
 
@@ -127,6 +150,8 @@ function play(guild) {
         })
         .on('error', err => console.error(err));
 
+    dispatcher.setVolumeLogarithmic(serverQueue.volume);
+
     serverQueue.textChannel.send(`🎶Started playing: \`${song.title} (${helpers.secondsToHMSString(song.duration)})\`. Added by ${song.user}.🎶`)
 }
 
@@ -154,7 +179,5 @@ function createNowPlayingEmbed(songs) {
         .addField('Currently playing:', `\`${songs[0].title} (${helpers.secondsToHMSString(songs[0].duration)})\`. Added by ${songs[0].user}.`)
         .addField('Upcoming songs:', upcomingString || 'No upcoming songs');
 }
-//add volume method
-//dispatcher.setVolumeLogarithmic(serverQueue.volume);
 
 //TODO: start from timestamp, pause, voting for skip, if channel is deleted, restart queue
