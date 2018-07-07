@@ -5,7 +5,7 @@ const settings = {};
 const path = require("path");
 const dataDir = path.join(process.cwd(), 'data/');
 const Cloud = require('./googleCloud.js');
-const ignoredServerIds = process.env.IGNORED_SERVER_IDS || [];
+const ignoredServerIds = process.env.IGNORED_SERVER_IDS || {};
 
 if (fs.existsSync('./settings.json')) {
     let settingsFile = require('./settings.json');
@@ -51,7 +51,7 @@ client.on('message', async message => {
     if (message.channel.type === 'dm') return; //TODO: allow some commands in dm channel (like help)
     if (!message.content.startsWith(client.prefix)) return;
 
-    if (ignoredServerIds.find(message.guild.id)) return;
+    if (ignoredServerIds[message.guild.id]) return;
 
     let args = message.content.split(' ');
     let command = args[0].toLowerCase();
