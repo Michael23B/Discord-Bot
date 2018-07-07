@@ -66,3 +66,6 @@ async function createVoiceChannel(client, message, args) {
     message.reply(`I'll delete that channel in ${timeToDelete} minutes unless you're still using it by then.`)
         .then(msg => msg.delete(client.msgLife)).catch(console.error);
 }
+
+//TODO: allow call names to have spaces (put name inside " " or something)
+//FIXME: bug because call name is greater than 100 characters

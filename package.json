@@ -17,6 +17,7 @@
     "ffmpeg": "0.0.4",
     "node-opus": "^0.3.0",
     "opusscript": "0.0.6",
+    "simple-youtube-api": "^5.0.2",
     "superagent": "^3.8.3",
     "ytdl-core": "^0.20.4"
   },

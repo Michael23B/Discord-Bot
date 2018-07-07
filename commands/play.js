@@ -1,8 +1,20 @@
 const ytdl = require('ytdl-core');
 const Discord = require('discord.js');
 const helpers = require('../helpers');
+const YouTube = require('simple-youtube-api');
+const fs = require('fs');
+let ApiKey;
+
+if (fs.existsSync('./settings.json')) {
+    let { ytApiKey } = require('../settings.json');
+    ApiKey = ytApiKey;
+}
+else {
+    ApiKey = process.env.YOUTUBE_API_KEY;
+}
 
 let queue = new Map();
+const youtube = new YouTube(ApiKey);
 
 let running = false;
 
@@ -21,7 +33,7 @@ module.exports.run = async(client, message, args) => {
     if (serverQueue && serverQueue.songs.length > 0 && serverQueue.playing === false && !args[0]) {
         serverQueue.playing = true;
         serverQueue.connection.dispatcher.resume();
-        message.reply('**Resumed music**').catch(console.error);
+        message.channel.send('**Resumed music**').catch(console.error);
         return running = false;
     }
 
@@ -36,6 +48,22 @@ module.exports.run = async(client, message, args) => {
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return running = false;
     }
+
+    let video;
+    let results;
+    video = await youtube.getVideo(args[0]).catch(async () => {
+        results = await youtube.searchVideos(args[0], 4)
+            .then(() => video = results[0]).catch(() => {
+                message.reply('couldn\'t find that video. Make sure your command looks like this `>play [YouTube search or video URL]`')
+                    .then(msg => msg.delete(client.msgLife)).catch(console.error);
+            });
+        //temporary, add vote embed later;
+    });
+    if (!video) return running = false;
+
+    console.log(video);
+    //info from youtube video api
+    //duration.hours duration.minutes duration.seconds, 'youtubewatchurl' + .id, .title, .thumbnails[0 - 3]
 
     const songInfo = await ytdl.getInfo(args[0]).catch(err => {
         message.reply(err.toString())
@@ -99,7 +127,7 @@ module.exports.stop = function(client, message, args) {
 
     serverQueue.songs = [];
     serverQueue.connection.dispatcher.end();
-    message.reply('stopped playing.').catch(console.error);
+    message.channel.send('**Stopped music**.').catch(console.error);
 };
 
 module.exports.changeVolume = function(client, message, args) {
@@ -202,7 +230,7 @@ function createNowPlayingEmbed(songs, colour) {
     });
 
     return new Discord.RichEmbed()
-        .setTitle(`🎶Current Playlist🎶`)
+        .setTitle(`🎶 Playlist 🎶`)
         .setColor(colour || 'DARK_AQUA')
         .addField('Currently playing:', `\`${songs[0].title} (${helpers.secondsToHMSString(songs[0].duration)})\` - *Added by ${songs[0].user}*`)
         .addField('Upcoming songs:', upcomingString || 'No upcoming songs');
