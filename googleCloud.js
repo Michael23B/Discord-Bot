@@ -1,14 +1,13 @@
-/*
 const storage = require('@google-cloud/storage')({
     projectId: 'aesthetic-fx-209012',
     credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS)
 });
-*/
+
 const fs = require('fs');
 //let storage;
 //If ACTIVE is false, we do not upload or retrieve our data from the bucket. Set to false if you are running locally or
 //if your server can store this data persistently.
-module.exports.ACTIVE = false;
+module.exports.ACTIVE = true;
 
 //If we have application credentials, we don't need to supply a key file
 //storage = new Storage();

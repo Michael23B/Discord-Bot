@@ -24,10 +24,13 @@ module.exports.run = async(client, message, args) => {
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return;
     }
-    running = true;
 
     const channel = message.member.voiceChannel;
     const serverQueue = queue.get(message.guild.id);
+
+    //If we are creating a new queue, wait before allowing more songs to be added.
+    //If we don't do this, users can spam start a song and the result is buggy.
+    if (!serverQueue) running = true;
 
     //We have a current queue, songs, the user supplied no video and we are currently paused -> un-pause
     if (serverQueue && serverQueue.songs.length > 0 && serverQueue.playing === false && !args[0]) {
@@ -52,24 +55,18 @@ module.exports.run = async(client, message, args) => {
     let video;
     let results;
     video = await youtube.getVideo(args[0]).catch(async () => {
-        results = await youtube.searchVideos(args[0], 4)
-            .then(() => video = results[0]).catch(() => {
-                message.reply('couldn\'t find that video. Make sure your command looks like this `>play [YouTube search or video URL]`')
+        results = await youtube.searchVideos(Array.prototype.join.call(args.slice(), ' ')).catch(() => {
+                message.reply('couldn\'t find that video. Make sure your command looks like this: `>play [YouTube search or video URL]`')
                     .then(msg => msg.delete(client.msgLife)).catch(console.error);
             });
-        //temporary, add vote embed later;
+        if (!results) return null;
+        return await youtube.getVideoByID(results[0].id).catch(() => {
+            message.reply('I found a video, but I wasn\'t able to fetch it for some reason.')
+                .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        });
+        //temporary, add vote embed later
     });
     if (!video) return running = false;
-
-    console.log(video);
-    //info from youtube video api
-    //duration.hours duration.minutes duration.seconds, 'youtubewatchurl' + .id, .title, .thumbnails[0 - 3]
-
-    const songInfo = await ytdl.getInfo(args[0]).catch(err => {
-        message.reply(err.toString())
-            .then(msg => msg.delete(client.msgLife)).catch(console.error);
-    });
-    if (!songInfo) return running = false;
 
     if (!serverQueue) {
         //Don't have a queue for the current server, make one and start playing
@@ -77,12 +74,10 @@ module.exports.run = async(client, message, args) => {
             textChannel: message.channel,
             voiceChannel: channel,
             connection: null,
-            songs: [createSongObject(songInfo, message)],
+            songs: [createSongObject(video, message)],
             volume: 5,
             playing: true
         };
-
-        console.log(queueEntry.songs);
 
         queueEntry.connection = await channel.join()
             .catch(err => {
@@ -98,8 +93,9 @@ module.exports.run = async(client, message, args) => {
         play(message.guild);
     }
     else {
-        serverQueue.songs.push(createSongObject(songInfo, message));
-        message.channel.send(`\`${songInfo.title}(${helpers.secondsToHMSString(songInfo.length_seconds)})\` added to the queue.`)
+        let songObj = createSongObject(video, message);
+        serverQueue.songs.push(songObj);
+        message.channel.send(`\`${songObj.title}(${helpers.secondsToHMSString(songObj.duration)})\` added to the queue.`)
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
     }
     running = false;
@@ -211,13 +207,14 @@ function play(guild) {
     serverQueue.textChannel.send(`Started playing: \`${song.title} (${helpers.secondsToHMSString(song.duration)})\` - *Added by ${song.user}*`)
 }
 
-function createSongObject(songInfo, message) {
+function createSongObject(video, message) {
     return {
-        title: songInfo.title,
-        url: songInfo.video_url,
+        title: video.title,
+        url: 'www.youtube.com/watch?v=' + video.id,
         user: message.author.username,
-        img: songInfo.thumbnail_url,
-        duration: songInfo.length_seconds
+        img: video.thumbnails.default.url,
+        description: video.description,
+        duration: video.duration.days * 86400 + video.duration.hours * 3600 + video.duration.minutes * 60 + video.duration.seconds
     }
 }
 
@@ -236,4 +233,4 @@ function createNowPlayingEmbed(songs, colour) {
         .addField('Upcoming songs:', upcomingString || 'No upcoming songs');
 }
 
-//TODO: start from timestamp, pause, voting for skip, if channel is deleted, restart queue
+//TODO: start from timestamp, pause, voting for skip, if channel is deleted, restart queue, recently played in playlist, max length in playlist embed
