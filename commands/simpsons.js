@@ -1,5 +1,6 @@
 const superagent = require('superagent');
 const Discord = require('discord.js');
+const helpers = require('../helpers.js');
 
 const numberFilter = (reaction) => reaction.emoji.name === '1⃣' || reaction.emoji.name === '2⃣'
     || reaction.emoji.name === '3⃣' || reaction.emoji.name === '4⃣'
@@ -145,7 +146,7 @@ async function awaitWinningFrame(voteMessage, timeToWait, count) {
     }
 
     return await voteMessage.awaitReactions(numberFilter, { time: timeToWait })
-        .then(collected => selectWinningEmoji(collected))
+        .then(collected => helpers.selectWinningEmoji(collected))
         .catch(console.error);
 }
 
@@ -169,37 +170,6 @@ async function awaitFrameChange(message, timeToWait) {
     return await message.awaitReactions(nextPrevFilter, { time: timeToWait })
         .then(collected => determineNextOrPrev(collected))
         .catch(console.error);
-}
-
-//Returns a number based on the emoji with the most reactions
-function selectWinningEmoji(collected) {
-    let maxCount = 1;
-    let winningEmoji = '1⃣';
-
-    collected.forEach(entry => {
-        if (entry.count > maxCount) {
-            maxCount = entry.count;
-            winningEmoji = entry._emoji.name;
-        }
-    });
-
-    switch (winningEmoji) {
-        case '1⃣':
-            return 0;
-        case '2⃣':
-            return 1;
-        case '3⃣':
-            return 2;
-        case '4⃣':
-            return 3;
-        case '5⃣':
-            return 4;
-        case '6⃣':
-            return 5;
-        default:
-            return 0;
-    }
-    //TODO: Could probably extract the number out of this instead of the switch case, same deal with the voteReactions[]
 }
 
 function determineNextOrPrev(collected) {

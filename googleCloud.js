@@ -1,4 +1,3 @@
-
 const storage = require('@google-cloud/storage')({
     projectId: 'aesthetic-fx-209012',
     credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS)

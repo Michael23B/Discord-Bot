@@ -18,6 +18,12 @@ const youtube = new YouTube(ApiKey);
 
 let running = false;
 
+const numberFilter = (reaction) => reaction.emoji.name === '1⃣' || reaction.emoji.name === '2⃣'
+    || reaction.emoji.name === '3⃣' || reaction.emoji.name === '4⃣'
+    || reaction.emoji.name === '5⃣' || reaction.emoji.name === '6⃣';
+
+const voteReactions = ['1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣'];
+
 module.exports.run = async(client, message, args) => {
     if (running) {
         message.reply('please wait for me to load the current song and then try again.')
@@ -47,24 +53,29 @@ module.exports.run = async(client, message, args) => {
     }
 
     if (!args[0]) {
-        message.reply('please provide a youtube video to play. `>play [Youtube video url]`')
+        message.reply('please provide a youtube video to play. `>play [Search query or video URL]`')
             .then(msg => msg.delete(client.msgLife)).catch(console.error);
         return running = false;
     }
 
     let video;
     let results;
+    //Tries to get the video assuming args[0] is a url, if that fails it searches using all the arguments as the query,
+    // if it finds results, a vote is started so select a result; the winning result is added to queue/played
     video = await youtube.getVideo(args[0]).catch(async () => {
-        results = await youtube.searchVideos(Array.prototype.join.call(args.slice(), ' ')).catch(() => {
-                message.reply('couldn\'t find that video. Make sure your command looks like this: `>play [YouTube search or video URL]`')
+        let query = Array.prototype.join.call(args.slice(), ' ');
+        results = await youtube.searchVideos(query).catch(() => {
+                message.reply('couldn\'t find that video. Make sure your command looks like this: `>play [Search query or video URL]`')
                     .then(msg => msg.delete(client.msgLife)).catch(console.error);
-            });
-        if (!results) return null;
-        return await youtube.getVideoByID(results[0].id).catch(() => {
+        });
+        if (!results || results.length === 0) return null;
+
+        let winningResultIndex = await getWinningResultIndex(results, client, message, query);
+
+        return await youtube.getVideoByID(results[winningResultIndex].id).catch(() => {
             message.reply('I found a video, but I wasn\'t able to fetch it for some reason.')
                 .then(msg => msg.delete(client.msgLife)).catch(console.error);
         });
-        //temporary, add vote embed later
     });
     if (!video) return running = false;
 
@@ -160,7 +171,8 @@ module.exports.nowPlaying = function(client, message, args) {
         return;
     }
 
-    message.channel.send(createNowPlayingEmbed(serverQueue.songs, botMember.colorRole.color)).catch(console.error);
+    message.channel.send(createNowPlayingEmbed(serverQueue.songs,
+        botMember.colorRole ? botMember.colorRole.color : 'BLUE')).catch(console.error);
 };
 
 module.exports.pause = function(client, message, args) {
@@ -228,9 +240,56 @@ function createNowPlayingEmbed(songs, colour) {
 
     return new Discord.RichEmbed()
         .setTitle(`🎶 Playlist 🎶`)
-        .setColor(colour || 'DARK_AQUA')
+        .setColor(colour || 'BLUE')
         .addField('Currently playing:', `\`${songs[0].title} (${helpers.secondsToHMSString(songs[0].duration)})\` - *Added by ${songs[0].user}*`)
         .addField('Upcoming songs:', upcomingString || 'No upcoming songs');
+}
+
+//Voting for search result to select. Mostly duplicated code from simpsons.js, might refactor to be more general later.
+async function getWinningResultIndex(results, client, message, query) {
+    const botMember = message.guild.members.find(x => x.id === client.user.id);
+    let voteMessage = null;
+    let winningIndex;
+
+    let voteEmbed = getResultsVoteEmbed(results, query, botMember.colorRole ? botMember.colorRole.color : 'BLUE');
+
+    if (voteEmbed) {
+        voteMessage = await message.channel.send(voteEmbed);
+        winningIndex = await awaitWinningResult(voteMessage, 10000, Math.min(results.length, 4)).catch(console.error);
+        if (winningIndex >= results.length) winningIndex = 0;
+    }
+    else winningIndex = 0;
+
+    if (voteMessage) voteMessage.delete().catch(console.error);
+
+    return winningIndex;
+}
+
+function getResultsVoteEmbed(results, query, colour) {
+    if (results.length === 1) return null;
+    let resultsCount = Math.min(results.length, 4);
+
+    let embed = new Discord.RichEmbed()
+        .setTitle(`Results for "${query}"`)
+        .setColor(colour)
+        .setFooter('React to select result.');
+
+    for (let i = 0; i < resultsCount; ++i) {
+        let video = results[i];
+        embed.addField(`${i + 1}. ${video.title}`, `*By ${video.channel.title}*`);
+    }
+
+    return embed;
+}
+
+async function awaitWinningResult(voteMessage, timeToWait, count) {
+    for (let i = 0; i < count; ++i) {
+        await voteMessage.react(voteReactions[i]).catch(console.error);
+    }
+
+    return await voteMessage.awaitReactions(numberFilter, { time: timeToWait })
+        .then(collected => helpers.selectWinningEmoji(collected))
+        .catch(console.error);
 }
 
 //TODO: start from timestamp, pause, voting for skip, if channel is deleted, restart queue, recently played in playlist, max length in playlist embed

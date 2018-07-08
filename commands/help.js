@@ -59,6 +59,12 @@ async function createHelpEmbed(client, message, args) {
             '>sell [item to sell] [amount]\n' +
             '>give [item to give] [amount] [@username]\n' +
             '>gamble [amount to gamble]```')
+        .addField('Music:', '```>play [Search query or video URL]\n' +
+            '>skip\n' +
+            '>stop\n' +
+            '>pause\n' +
+            '>volume [1.0 - 20.0]\n' +
+            '>playlist```')
         .setFooter(`[Arguments] are mostly optional. Type ${client.prefix}help detailed for more info.`);
 }
 

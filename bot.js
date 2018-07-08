@@ -5,7 +5,7 @@ const settings = {};
 const path = require("path");
 const dataDir = path.join(process.cwd(), 'data/');
 const Cloud = require('./googleCloud.js');
-const ignoredServerIds = process.env.IGNORED_SERVER_IDS || {};
+const ignoredServerIds = process.env.IGNORED_SERVER_IDS ? JSON.parse(process.env.IGNORED_SERVER_IDS) : {};
 
 if (fs.existsSync('./settings.json')) {
     let settingsFile = require('./settings.json');
