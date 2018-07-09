@@ -62,8 +62,8 @@ async function createHelpEmbed(client, message, args) {
         .addField('Music:', '```>play [Search query or video URL]\n' +
             '>skip\n' +
             '>stop\n' +
-            '>pause\n' +
-            '>volume [1.0 - 20.0]\n' +
+            '>pause (resume with >play)\n' +
+            '>volume [1.0 - 20.0] (check volume with >volume)\n' +
             '>playlist```')
         .setFooter(`[Arguments] are mostly optional. Type ${client.prefix}help detailed for more info.`);
 }
@@ -147,4 +147,18 @@ async function createDetailedHelpEmbed(client, message, args) {
             '```>gamble [amount to gamble]```' +
             'Gambles your money (not a scam). [amount] can be `all`.\n' +
             '`>inventory, >i, >daily, >hourly, >stocks, >buy, >sell, >give, >gamble`')
+        .addField('Music:', '```>play [Search query or video URL]```' +
+            'YouTube URLs are the only supported video type. If using a search query, YouTube search is used.\n' +
+            '```>skip```' +
+            'Skips the currently playing song in the playlist.\n' +
+            '```>stop```' +
+            'Stops the current song, clears the playlist and causes the bot to leave the call.\n' +
+            '```>pause```' +
+            'Pauses the current song. Songs can be un-paused using the `>play` command with no additional arguments.\n' +
+            '```>volume [1.0 - 20.0]```' +
+            'Sets the audio volume for the current playlist. Begins at 5. You can see the current volume' +
+            ' using `>volume` with no additional arguments.\n' +
+            '```>playlist```' +
+            'Shows the currently playing and queued up songs. Shows the duration of each song as well as the person who requested it.\n' +
+            '`>play, >skip, >stop, >pause, >volume, >playlist`');
 }

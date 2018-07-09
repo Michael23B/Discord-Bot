@@ -152,6 +152,11 @@ module.exports.changeVolume = function(client, message, args) {
         return;
     }
 
+    if (isNaN(args[0])) {
+        message.reply(`${args[0]} is not a number between 1 and 20.`)
+            .then(msg => msg.delete(client.msgLife)).catch(console.error);
+        return;
+    }
     let newVolume = helpers.clamp(Number(args[0]), 1, 20);
 
     serverQueue.volume = newVolume;
@@ -237,6 +242,9 @@ function createNowPlayingEmbed(songs, colour) {
             upcomingString += `\`${song.title} (${helpers.secondsToHMSString(song.duration)})\` - *Added by ${song.user}*\n`;
         }
     });
+
+    //Discord embed size is limited to 1024 characters per field
+    if (upcomingString.length > 1024) upcomingString = upcomingString.slice(0,950) + `**...More songs not shown (${songs.length} total songs)**`;
 
     return new Discord.RichEmbed()
         .setTitle(`🎶 Playlist 🎶`)
