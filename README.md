@@ -1,11 +1,14 @@
 # Discord-Bot
 
-## Coming Soon
-Some info and images about what the bot does. Maybe a link to add to server also.
+## Features
+The bot has a number of features for moderation, images and entertainment. 
+The full list of commands is below.
+
+![commands](https://user-images.githubusercontent.com/33080132/43244029-8976b45c-90ec-11e8-895e-88d54e44440c.png)
 
 ## Self-Hosting Instructions
 To host the bot yourself, you need to have [Node.js](https://nodejs.org/en/) and [FFmpeg](https://www.ffmpeg.org/) installed.
-If you plan to host on Heroku, [this buildpack](https://elements.heroku.com/buildpacks/jonathanong/heroku-buildpack-ffmpeg-latest) ensure your dyno has the latest version of FFmpeg installed.
+If you plan to host on Heroku, [this buildpack](https://elements.heroku.com/buildpacks/jonathanong/heroku-buildpack-ffmpeg-latest) ensures your dyno has the latest version of FFmpeg installed.
 
 Download the [latest release](https://github.com/Michael23B/Discord-Bot/releases) to start.
 
